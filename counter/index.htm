@@ -1,0 +1,41 @@
+<html>
+<bogy bgcolor="#ffffff">
+<center><font size=4><b>Graphics Counter</b></font></center>
+<p>
+This is a graphical counter that is called from the img tag.
+<br><center><img src="/counter/counter.cgi?counter-index.txt"></center><p>
+
+<b>Usage is:</b><br>
+
+<pre>
+
+&ltimg src="/counter/counter.cgi?CounterDataFile">
+ </pre>
+for example, if your CounterDataFile was count.txt in the /file dir :
+ <pre>
+&ltimg src="/counter/counter.cgi?count.txt">
+</pre>
+<p>
+The count file name should some how represent the page and directory
+its located in so you dont mistakenly use duplicate names. A good example
+would be if the directory is counters and the html page is called index.htm
+than name the couter file counters-index.txt. This would make the img src
+tag the following.<br>
+
+<pre>
+
+&ltimg src="/counter/counter.cgi?counters-index.txt">
+
+</pre>
+<p>
+You can edit the count on any page by going to the counter directory
+off of your main www and changing the number in the txt file of the page
+you would like to correct.
+
+
+</body>
+</html>
+
+
+
+
