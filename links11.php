@@ -1,0 +1,27 @@
+<?define ('wwwf_IN',true);
+$title = "Jobs, Webmaster, Software, and Other Stuff";
+$desc = "Books/papers on free market economics and policy, pro-life policy, Cobin CV, links, photos, other resources, allodial title, fire safety regulation, building regulation, free market policy, drug legalization, abortion debate";
+$key = "allodial title, allodialism, allodial policy, free market textbook, homeschool books, economics books for homeschoolers, public policy and Christians, creation and evolution, Christian homeschool books, public policy books, pro-life books, abortion issue, Christians and government, building regulation, allodial title, tax protesting, revolution, fire safety regulation, accreditation of higher education, public choice economics, Virginia school, Austrian economics, law and economics, subjectivist economics, knowledge problem, market failure, government failure, urban regulation, fire safety regulation, romantic vision of government, public, choice, Austrian, economics, law, rent seeking, right, allodial, regulation, policy, vote, government, Bible, pro-life, Christian, building, zoning, liberty, planning, market, Chile, abortion debate, public school, Romans 13, feudal, privatization, allodial property";
+$alt = "Policy of Liberty is your source for books/papers on free market economics and pro-life policy as well as quotes and links to economic related issues";
+$titleimg = "links.jpg";include ("top.php")?>
+<? include ("lk.php")?><br><table cellpadding="0" cellspacing="0" width="771" border="0" bgcolor="#cccccc">
+<tr><td><img src="white.gif" height="3" width="771" alt="<? echo "$alt"?>"></td></tr>
+<tr><td><p class="pl"><b>Jobs, Webmaster, Software, and Other Stuff:</b></p></td></TD></tr></table>
+<br><table width="771"><tr><td><ul>
+<li><a href="http://www.aeaweb.org/joe/" class="linc">Job Openings for Economists</a></li><br>
+<li><a href="http://chronicle.com/jobs/" class="linc">The Chronicle of Higher Education academic jobs listing</a></li><br>
+<li><a href="http://www.latpro.com/" class="linc">Latin America's Professional Network</a> <a href="http://www.latpro.com/index.php" class="linc">(Members' link)</a></li><br>
+<li><a href="http://www.eudora.com/products/eudora/download/" class="linc">Get Eudora email client</a> <span class="linc">FREE or try</span> <a href="http://www.5star-shareware.com/" class="linc">this page</a> <span class="linc">with other free email clients or </span><a href="http://www.internet-soft.com/netmail.htm" class="linc">here for Net Mail.</a></li><br>
+<li><span class="linc">If you have a website, you might want to check out</span> <a href="http://selfpromotion.com/?CF=jcobin@policyofliberty.net" class="linc">this resource.</a><span class="linc">You can use it for free to register your site with all the important search engines and indexes, and afterwards decide if and how much you want to pay to support the service (if anything).</span></li><br>
+<li><span class="linc">Also try <a href="http://www.ineedhits.com/add-it/free/" class="linc">Submit Free</a> and many free resources from</span> <a href="http://www.thefreesite.com/" class="linc">The Free Site</a></li><br>
+<li><a href="http://www.sitesell.com/" class="linc">Make Your Site Sell</a><span class="linc">. Click </span><a href="http://www.reporting.net/networks/affiliates/bf_logon_page" class="linc">here</a> <span class="linc">for the affiliates' center.</span></li><br>
+<li><span class="linc">Speed up your website by improving its graphics (free service):</span> <a href="http://www.spinwave.com/crunchers.html" class="linc">Spinwave.com</a></li><br>
+<li><span class="linc">Register your own domain</span> <a href="http://www.networksolutions.com/en_US/purchasing/02.jhtml;jsessionid=XPN2NTHP2JCLZWFI3EFCFEY?_requestid=125955" class="linc"> name</a></li><br>
+<li><a href="http://www.keirsey.com/" class="linc">Keirsey Temperament and Character Sorter </a> <a href="http://members.tripod.com/~PersonalityInstitute/Myers-BriggsTypeIndicator.htm" class="linc">(M-B description)</a><span class="linc">, and the less useful</span> <a href="http://ei.haygroup.com/resources/content_ieitest.html" class="linc">EQ test.</a></li><br>
+<li><a href="http://www.dailyedeals.com/free_internet/disk_space.htm#Compare" class="linc">Internet hard drive free space (links and comparison chart)</a></li><br>
+<li><a href="http://www.webbox.com/" class="linc">Remote email access</a></li><br>
+<li><a href="http://www.efax.com/index.html" class="linc">Remote fax access</a></li><br>
+<li><a href="http://my.webmd.com/heightpredict" class="linc">Kid's height predictor</a></li><br>
+<li><A HREF="http://www.PolicyOfLiberty.net/DividendReinvestmentPlans.html" class="linc">Stock Purchase and Dividend Reinvestment Plans (with links)</A></li><br>
+<li><A href="https://www.ehealthinsurance.com/ehi/Alliance?sourceid=00387801113953989511&amp;allid=Bef8047" class="linc">e health insurance (Discounted Major Medical Quotes)</a><IMG SRC="http://service.bfast.com/bfast/serve?bfmid=26375915&siteid=38780111&bfpage=ehi_logo" BORDER="0" WIDTH="1" HEIGHT="1" NOSAVE ><A HREF="http://service.bfast.com/bfast/click?bfmid=26375915&siteid=38780111&bfpage=ehi_logo" TARGET="_top"><IMG SRC="http://www.ehealthinsurance.com/ehealthinsurance/image_affiliate/140_80.gif" BORDER="0" WIDTH="140" HEIGHT="80" ALT=""></A></li></ul></td></tr></table>
+<table cellpadding="0" cellspacing="0" width="771" border="0"><? include ("base.php")?>
