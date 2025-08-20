@@ -1,0 +1,199 @@
+P  {
+    font-family: Arial;
+	font-size: 9pt;
+	color :#333333;
+	}
+ 
+ .facts
+ {
+  text-align: center;
+  margin-top: 0px;
+  margin-bottom: 0px;
+ }
+ 
+ .smaller
+ {
+  font-family: Arial;
+  font-size: 8pt;
+  color: #333333; 
+ }
+
+.smaller:link
+ {
+  font-family: Arial;
+  font-size: 8pt;
+  color: #333333;
+  text-decoration:underline; 
+ } 
+ 
+ .smaller:hover
+ {
+  font-family: Arial;
+  font-size: 8pt;
+  color: #333333;
+  text-decoration:none;
+  background-color: #99cc99;
+ }
+ 
+ .subhead
+ {
+  font-family: Arial;
+  font-size: 15pt;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  color: #333333; 
+ }
+ 
+ .head
+ {
+  font-family: Arial;
+  font-size: 20pt;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  color: #333333; 
+ }
+
+.head:link
+ {
+  font-family: Arial;
+  font-size: 20pt;
+  color: #333333;
+  text-decoration:underline; 
+ } 
+ 
+ .head:hover
+ {
+  font-family: Arial;
+  font-size: 20pt;
+  color: #333333;
+  text-decoration:none;
+  background-color: #B4BEEB;
+ }
+
+ .news
+ {
+  background-image: url(../form.jpg);
+  background-repeat: no-repeat;
+  background-position: top center;
+ }
+
+ .form
+ {
+  font-family: Arial;
+  border: solid 1px #000000;
+  font-size: 10pt;
+  color: #333333;
+ }	
+
+ .list
+ {
+  font-family: Arial;
+  font-size: 14pt;
+  color: #333366; 
+ }
+ 
+ .list:link
+ {
+  font-family: Arial;
+  font-size: 14pt;
+  color: #333366;
+  text-decoration:underline; 
+ } 
+ 
+ .list:hover
+ {
+  font-family: Arial;
+  font-size: 14pt;
+  color: #333366;
+  text-decoration:none;
+  background-color: #B4BEEB;
+ }
+ 
+ .pl
+ {
+  font-family: Arial;
+  font-size: 9pt;
+  margin-top: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  color: #333333; 
+ }
+ 
+ .pl:link {  font-family: Arial;  font-size: 9pt;  color: #333333;    text-decoration:underline;  } 
+ .pl:hover
+ {
+  font-family: Arial;
+  font-size: 9pt;
+  color: #333333;
+  text-decoration:none;
+  background-color: #99cc99;
+ }
+ 
+ .white 
+ {
+  font-family: Arial;
+  font-size: 9pt;
+  margin-top: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  color: #ffffff;
+ } 
+ 
+ .red 
+ {
+  font-family: Arial;
+  font-size: 9pt;
+  color: #990000;
+ } 
+ 
+  .linc 
+ {
+  font-family: Arial;
+  font-size: 9pt;
+  color: #333333;
+ } 
+  .linc:link { font-family: Arial;  font-size: 9pt;  color: #333333;  text-decoration: underline; } 
+  .linc:hover { font-family: Arial;  font-size: 9pt;  color: #333333;  text-decoration: none; background-color: #99cc99 }
+  
+ .foot
+ {
+  text-align:left;
+  font-family: Arial;
+  font-size: 8pt;
+  color: #000000; 
+ }
+ 
+ .foot:link
+ {
+  text-align: left;
+  font-family: Arial;
+  font-size: 8pt;
+  color: #000000;
+  text-decoration: none; 
+ }
+ 
+ 
+ .foot:visited
+ {
+  text-align:left;
+  font-family: Arial;
+  font-size: 8pt;
+  color: #663300;
+  text-decoration: none;
+ }
+ 
+ 
+ .foot:hover
+ {
+  text-align: left;
+  font-family: Arial;
+  font-size: 8pt;
+  color: #000000; 
+  text-decoration: underline;
+ }
