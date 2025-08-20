@@ -1,0 +1,65 @@
+<HTML>
+<HEAD>
+<TITLE>PlusScripts Administration</TITLE>
+</HEAD>
+<BODY>
+<CENTER><H1>PlusScripts Administration</CENTER></H1>
+
+<A HREF="/forums/cgi-s/main_admin.cgi">Main Administration</a> -<p>
+The overall admin script. Forums can be created and deleted via this script, and
+the 'master' templates can be edited through it as well.<br>
+Preset login:<br>
+<ul>
+   <li> username: admin
+   <li> password: blah
+</ul>
+<br>
+Please be sure to chnage this immediatly
+<p>
+
+<A HREF="/forums/cgi-s/admin.cgi">Forum Admistration</a> -<p> 
+For forums moderators, allows customization and board maintenance 
+and moderation. Each boards look and feel is completely controllable. 
+Posts will only be allowed through people actually entering it on the 
+forums page in your domain. For additional Security you may ban ip's 
+from posting and not allow posts that contain profanity.<br>
+<p>
+
+<b>Additional file descriptions</b><p>
+<pre>
+        templates/
+                        board.htm
+                                The template for the main board page where posts will be listed.
+                        error.htm
+                                The template for error messages.
+                        post.htm
+                                The template for individual posts.
+                        reply.htm
+                                The template for replies to posts.
+        banned.txt
+                List of banned IP addresses. One IP per line.
+        board.dat
+                Blank file. Will be used as the 'board database', storing thread information.  
+                This file is used by admin.cgi as well as board.cgi.
+        censor.txt
+                List of censored words. If $censor (in board.cfg) is set to 1, it's one censored
+                word per line, if set to 2, it's in the format of "censored word:change to" on
+                each line.
+        forum.db 
+                Database of forums. main_admin.cgi will use this to create/modify the forum index
+                page. 
+        forum_index.html
+                The forum index template page.
+        index.html
+                The forum index. Currently the same as forum_index.html.
+        passwd.txt
+                The password file for main_admin.cgi. The password files for each of the forums
+                will be stored in their own directories. The password is encrypted with the UNIX
+                standard crypt() function.
+</pre>
+
+
+
+</CENTER><font="-1">
+PlusScripts copyright 1998
+</font>
