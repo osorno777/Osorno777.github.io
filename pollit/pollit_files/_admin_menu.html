@@ -1,0 +1,104 @@
+<HTML>
+<HEAD>
+	<TITLE>Poll It v2.0 Administration Menu by CGI World</TITLE>
+
+</HEAD>
+<BODY Text=Black Link="#336699" VLink="Black">
+
+<CENTER> 
+
+<TABLE Width=590 CelLSpacing=0 CellPadding=5 Border=1 BorderColor=Black>
+<TR>
+   <TD BGCOLOR="#336699"> <B> <Font Face="Verdana,Arial" Size=3 Color=White>
+   Poll It v2.0 by CGI World - A Product of I2 Services, Inc.
+   </TD>
+</TR>
+
+<TR>
+   <TD BGCOLOR="#DDDDDD"> <Font Face="Verdana,Arial" Size=3>
+
+   <BR><CENTER>
+
+   <FORM Action="$script_url$?load=admin" Method=POST>
+   <INPUT Type=Hidden Name="entered_password" Value="$entered_password$">
+
+   <TABLE Width=550 CellPadding=5 Border=1 CellSpacing=0 BorderColor=Black>
+   <TR>
+      <TD Width=110 BGCOLOR="White" VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+      <B><A HREF="$script_url$">Poll Currently Running</A>: </TD><TD Width=470 BGCOLOR="#EEEEEE" VALIGN=TOP BGCOLOR="#EEEEEE">
+      <Font Face="Verdana,Arial" Size=2>$poll_title$ </TD>
+   </TR>
+
+   <TR>
+      <TD Width=110 BGCOLOR="White" VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+      <B>Poll Statistics: </TD><TD BGCOLOR="#EEEEEE" VALIGN=TOP BGCOLOR="#EEEEEE">
+      <Font Face="Verdana,Arial" Size=2>
+
+      <!-- insert : $show_results$ -->
+      <!-- def : poll_results -->
+      $image_percent$ $percent$ <BR>  $poll_option$  <BR>
+      <!-- /def : poll_results -->
+
+
+       </TD>
+   </TR>
+
+   <TR>
+      <TD Width=110 BGCOLOR="White" VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+      <B>Choose Action: </TD><TD BGCOLOR="#EEEEEE" VALIGN=TOP BGCOLOR="#EEEEEE">
+      <Font Face="Verdana,Arial" Size=2>
+
+      <Input Type=Radio Name="action" Value="expire_poll"> Expire Above Poll - (Stored in <A HREF="$script_url$?load=lastpoll">Last Poll</A> Area)<BR>
+      <Input Type=Radio Name="action" Value="create_new"> Create New Poll<BR>
+      <Input Type=Radio Name="action" Value="delete_poll"> Delete Current Poll - (<B>NOT</B> sent to <A HREF="$script_url$?load=lastpoll">Last Poll Page</A><BR>
+      <Input Type=Radio Name="action" Value="add_option"> Add Another Poll Option - (Type In Below) <BR>
+
+
+       </TD>
+   </TR>
+
+   <TR>
+      <TD Width=110 BGCOLOR="White" VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+      <B>Add Voting Option: </TD><TD BGCOLOR="#EEEEEE" VALIGN=TOP BGCOLOR="#EEEEEE">
+ 
+      <INPUT Name="add_option" Size=30>
+   
+       </TD>
+   </TR>
+
+   <TR>
+      <TD Width=110 BGCOLOR="White" VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+      &nbsp;</TD><TD BGCOLOR="#EEEEEE" VALIGN=TOP BGCOLOR="#EEEEEE">
+      
+      <INPUT Type=SUBMIT Value=" Click to Continue "> * 
+      <INPUT Type=RESET Value=" Reset Values ">
+
+
+       </TD>
+   </TR>
+
+
+
+
+   </TABLE>
+   </FORM>
+   </CENTER> 
+
+
+   </TD>
+</TR>
+</TABLE>
+
+<TABLE Width=590>
+<TR>
+   <TD BGCOLOR="White" Align=Right><Font Face="Verdana,Arial" Size=1>
+   &copy; Copyright <A HREF="http://www.cgi-world.com">CGI World</A> of <A HREF="http://www.i2-services.com">I2 Services, Inc</A>.<BR>
+   All Rights Reserved...
+   </TD>
+</TR>
+</TABLE>
+
+
+</CENTER>
+</BODY>
+</HTML>

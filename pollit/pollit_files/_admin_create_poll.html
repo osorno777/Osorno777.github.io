@@ -1,0 +1,102 @@
+<HTML>
+<HEAD>
+	<TITLE>Poll It v2.0 Administration Menu by CGI World</TITLE>
+
+</HEAD>
+<BODY Text=Black Link="#336699" VLink="Black">
+
+<CENTER> 
+
+<TABLE Width=590 CelLSpacing=0 CellPadding=5 Border=1 BorderColor=Black>
+<TR>
+   <TD BGCOLOR="#336699"> <B> <Font Face="Verdana,Arial" Size=3 Color=White>
+   Poll It v2.0 by CGI World - A Product of I2 Services, Inc.
+   </TD>
+</TR>
+
+<TR>
+   <TD BGCOLOR="#DDDDDD"> <Font Face="Verdana,Arial" Size=3>
+
+   <BR><CENTER>
+
+   <FORM Action="$script_url$?load=admin" Method=POST>
+   <INPUT Type=Hidden Name="entered_password" Value="$entered_password$">
+   <INPUT Type=Hidden Name="action" Value="create_new">
+
+   <TABLE Width=550 CellPadding=5 Border=1 CellSpacing=0 BorderColor=Black>
+   <TR>
+      <TD BGCOLOR="#EEEEEE"> <Font Face="Verdana,Arial"> <Font Size=2>
+
+      Use the below field information to build a new poll.
+      Create all of your poll options than choose one 
+      of the 2 actions below.
+
+      <P> <TABLE>
+
+      <TR><TD> <Font Face="Verdana,Arial" Size=2>Poll Title</TD><TD>: <INPUT Name="new_title" Size=35 Value="$new_title$"></TD></TR>
+      <TR><TD> <Font Face="Verdana,Arial" Size=2>Show Results After</TD><TD>: <INPUT Name="show_after" Size=4 Value="$show_after$"><Font Face="Verdana,Arial" Size=2> Votes</TD></TR>
+      <TR><TD COLSPAN=2><HR Size=1></TD></TR>
+      <TR><TD> <Font Face="Verdana,Arial" Size=2>Add Voting Option</TD><TD> <INPUT Name="add_option" Size=35> <INPUT Type=SUBMIT Value="Add"></TD></TR>
+      <TR><TD COLSPAN=2><Font Face="Verdana,Arial" Size=3> <HR Size=1> <BR>
+                        <B>Current Voting Options</B>: <P>
+
+      <DL>
+
+
+
+      <DD><!-- insert : $show_new_options$ -->
+      <!-- def : poll_options -->
+      <Font Size=2><INPUT Type=checkbox Name="remove_new" Value="$new_option$"> $new_option$ </Font> <BR>
+      <INPUT Type=Hidden Name="add_option" Value="$new_option$">
+      <!-- /def : poll_options -->
+ 
+      <P>
+
+      <DT> <B>Actions</B>: <P> <Font Size=2>
+
+      <DD><INPUT Type=Radio Name="new_pollaction" Value="lastpoll">Add New Poll & Send Current Poll to the <A HREF="$script_url$?load=lastpoll"> Last Poll</A>
+
+      <P> Or.... <P>
+
+      <DD><INPUT Type=Radio Name="new_pollaction" Value="1">Add New Poll, Overwrite current Poll.
+
+      <P>
+
+      <DD><INPUT Type=SUBMIT  Value="Complete Action">
+      
+
+
+      </DL>
+
+
+       </TD></TR>
+
+
+      </TABLE> </Font>
+
+       </TD>
+   </TR>
+
+
+   </TABLE>
+   </FORM>
+   </CENTER> 
+
+
+   </TD>
+</TR>
+</TABLE>
+
+<TABLE Width=590>
+<TR>
+   <TD BGCOLOR="White" Align=Right><Font Face="Verdana,Arial" Size=1>
+   &copy; Copyright <A HREF="http://www.cgi-world.com">CGI World</A> of <A HREF="http://www.i2-services.com">I2 Services, Inc</A>.<BR>
+   All Rights Reserved...
+   </TD>
+</TR>
+</TABLE>
+
+
+</CENTER>
+</BODY>
+</HTML>

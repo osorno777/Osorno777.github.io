@@ -1,0 +1,179 @@
+<html>
+
+<body bgcolor="#ffffff">
+
+
+
+<pre>
+
+  # Poll It Display Templates & Main CGI's: 
+  ###################################################
+
+  *  Poll_It_v2.0.cgi
+
+     - This is the main main CGI which displays your Poll
+       and Previous Poll, as well as administration area
+       at Poll-It_v2.0.cgi?load=login
+
+   * Poll_It_SSI_v2.0.cgi 
+
+     - This is the Poll It CGI Script used to import 
+       your polls into existing HTML Pages (uses ssi).
+
+
+  * _ssi_poll.html (/pollit/pollit_files)
+
+     - HTML Used for using Poll It through SSI to import
+       into existing web pages. (SSI = Server Side Includes)
+       Comes from Poll_It_SSI_v2.0
+
+
+  * _poll.html (/pollit/pollit_files)
+
+     - HTML Used for displaying your poll through
+       the Poll_It_v2.0 CGI Script.
+
+
+  * _last_poll.html (/pollit/pollit_files)
+
+     - HTML Used to Display your last poll results
+       through Poll_It_v2.0.cgi?load=lastpoll
+
+   
+ 
+  # Admin Section Templates:
+  ###################################################
+
+
+  * _admin_login.html (/pollit/pollit_files)
+ 
+     - Template used to login to the administration area.
+
+  * _admin_menu.html (/pollit/pollit_files)
+ 
+     - Template used for the main menu of the administration area.
+
+  * _admin_create_poll.html (/pollit/pollit_files)
+ 
+     - Template used to create a new poll.
+
+
+
+  # Poll It Data Files (Modified by the CGI Script):
+  ###################################################
+
+  * poll_info.txt (/pollit/pollit_files)
+ 
+     - Holds current poll information settings
+
+
+  * poll_options.txt 
+ 
+     - Holds current poll options to vote on
+
+
+  * last_poll_info.txt
+ 
+     - Holds previous poll information settings
+
+
+  * last_poll_options.txt
+ 
+     - Holds previous poll options that were voted on.
+
+
+  * ips.txt 
+
+     - Holds the IP #'s that voted to keep track of
+       who has voted.
+
+
+   #
+  #
+#
+# Installation Procedures:
+ #
+   #######################
+
+
+1) files that start w/ a underscore (_) you can leave alone. (Edit
+   these files for customization after you have the Poll It script running)
+
+   
+2) Now view the Poll It.cgi file in your browser, NOT THE Poll_It_SSI_v2.0.cgi
+   file, this file is to be used w/ SSI (Server Side Includes), not through
+   the browser by itself (See using Poll_It_SSI.cgi below)
+
+   You should now get an output from the poll.cgi script in your 
+   browser.
+
+   Now Visit:  poll.cgi?load=login   in your browser to start creating you
+               online polls.
+
+  #
+#
+#  Using Poll_It_SSI.cgi within a HTML Page:
+ #
+   #########################################
+
+
+   The filename packaged w/ this script named 'Poll_It_SSI_v2.0.cgi'
+   is the CGI Script used w/ SSI (Server Side Includes) to import
+   your poll on an existing web page.
+
+   To use SSI within HTML files you must have 
+   an *.shtml extension rather than *.html on your pages.  This allows
+   you to execute a command to include a CGI Output in your html file.
+
+   Now to input the Poll_It_SSI_v2.0.cgi script into an HTML page, use this 
+   code (After finding out what you need to use for SSI calls from the
+         above explanation):
+
+   &lt;!--#exec cgi="/pollit/Poll_It_SSI_v2.0.cgi" -->
+
+
+   The above tag will look for the *.cgi file at the location specified
+   & if there will output your current poll running into your web page.
+
+
+   #
+  #
+#
+#
+# Poll It Support:
+ #
+   ##################
+
+   If you need support for this product please visit:
+  
+   * http://www.cgi-world.com/support.html
+ 
+   or
+
+   e-Mail Us @:
+ 
+   * support_request@cgi-world.com
+
+   or
+
+   Visit Our Contact Us Page @:
+
+   * http://www.cgi-world.com/contact_us.html
+
+
+   #
+  #
+#
+# Copyright & Author Notes:
+ #
+   ########################
+
+   Poll It      -        All Rights Reserved.
+                         Copyright CGI World of I2 Services, Inc.
+                         CGI World (http://www.CGI-World.Com)
+                         CGI World is a Prouct of i2 Services, Inc.
+                         (http://www.i2-Services.Com)
+
+
+</pre>
+</html>

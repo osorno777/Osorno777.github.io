@@ -1,0 +1,52 @@
+<TABLE Width=165 CelLSpacing=0 Border=1 BorderColor=Black>
+<TR>
+   <TD BGCOLOR="#336699"> <B>  <Font Face="Verdana,Arial" Size=2 Color=White>
+   <CENTER>Interactive Polls
+
+   </TD>
+</TR>
+
+<TR>
+   <TD BGCOLOR="#DDDDDD"> <Font Face="Verdana,Arial" Size=2>
+   $poll_title$
+   </TD>
+</TR>
+<TR>
+   <TD BGCOLOR="#EEEEEE"> <Font Face="Verdana,Arial" Size=2>
+
+   <TABLE>
+   <FORM Action="$script_url$" Method=POST>
+   <INPUT Type="Hidden" Name="poll_id" Value="$poll_id$">
+
+   <!-- insert : $show_results$ -->
+   <!-- def : poll_results -->
+   <TR><TD> <Font Face="Verdana,Arial" Size=2>
+   $image_percent$ $percent$ <BR> $poll_option$  </TD></TR>
+   <!-- /def : poll_results -->
+
+   <!-- def : total_votes -->
+   <TR><TD> <Font Face="Verdana,Arial" Size=2>
+   <BR> <B>$show_total$ </B> </TD></TR>
+   <!-- /def : total_votes -->
+
+   <!-- insert : $display_options$  -->
+   <!-- def : show_options -->
+   <TR><TD VALIGN=TOP><INPUT Type=Radio Name="option_selected" Value="$option_id$"></TD><TD><Font Face="Verdana,Arial" Size=2>$poll_option$ </TD></TR>
+   <!-- /def : show_options -->
+
+   <TR><TD COLSPAN=2><CENTER>$submit$ <P> <Font Face="verdana,arial" Size=1>
+   $last_poll$ </TD></TR>
+   </FORM>
+   </TABLE>
+
+   </TD>
+</TR>
+<TR>
+   <TD BGCOLOR="#DDDDDD">  <Font Face="Verdana,Arial" Size=2>
+   <CENTER><A HREF="http://www.cgi-world.com">Poll It v2.0 by<BR>
+   <A HREF="http://www.cgi-world.com">CGI World</A>
+   </TD>
+</TR>
+
+
+</TABLE>

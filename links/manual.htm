@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>AFFA - Advanced Free For All CGI Manual</TITLE>
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#901000" VLINK="#800080" ALINK="#FFFF00">
+
+<table><tr><td width=10% valign=top bgcolor="#00003F">
+&nbsp;
+</td><td width=90% valign=top><ul>
+
+<b><i><FONT COLOR="#303090" SIZE=+2>Advanced Free For All Link List&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</font></i></b>
+<hr>
+<br><br>
+
+<H2>Introduction</H2>
+
+<P>The script is designed to be installed via FTP to a remote server 
+running PERL 5 or higher.  Designed for easy setup and configuration, 
+This free for all links is capable of powerful filtering that can prevent undesirable links
+being added to your site.
+
+<br><br>
+The archive contains 10 files.<br>
+index.cgi     - The perl script.<br>
+affa.cfg    - The configuration file.<br>
+header.htm  - The header is attached to the top of the link list.<br>
+footer.htm  - The footer is attached to the bottom of the link list.<br>
+db.txt      - An empty file used to store the links.<br>
+email.txt   - A template to change to modify the email autoresponse.<br>
+manual.txt  - The instruction manual for AFFA.<br>
+The last 3 files are not required to make the script work and should not be uploaded to your website.
+
+<br><br>
+<br><br>
+The script can be loaded in your web browser in one of 2 ways.  The first is calling the index.cgi file 
+directly.  For example:<br>
+http://www.yourdomain.com/links/index.cgi<br>
+In which case, do not supply a target file in the affa.cfg file.<br>
+Or you can load a page created by AFFA, like this:<br>
+http://www.yourdomain.com/directory/links.htm (we have installed it to run via index.cgi)<br>
+<P>
+
+
+<P>
+
+
+<A NAME="configuration">
+<H2>Customizing AFFA</H2>
+
+AFFA automatically generates an HTML file by first pre-pending a header HTML
+file, then formatting and laying-out the database file of links and finally by
+appending a footer HTML file. Sample header and footer HTML files are supplied
+with this distribution.
+<br><br>
+The main things you may wish to change are the Administrator email and the 
+TextReject field, which lists words that the script will not accept in a posting.<br><br>
+You will probably want to change the header.htm and footer.htm files to add your
+company details, advertising and some links.  Just be careful not to alter the working
+parts of the page.  It is best to make a spare copy of the original file before altering it.
+<br><br>
+<P>You can use AFFA as-is straight away (you should put your email address in the 
+Administrator field in the affa.cfg file however), or customize nearly every aspect of its
+operation. AFFA is configured through a configuration file (`AFFA.cfg') that you
+can edit with a text editor. The file itself contains comments (any line
+starting with a `#') that describe each of the options. In summary, the
+following configuration options are available:
+
+<BLOCKQUOTE>
+<UL>
+
+<LI>The location (path) of any of the files; in particular,
+    <UL>
+    <LI><STRONG>TargetFile</STRONG> - the HTML file to create
+    <LI><STRONG>HeaderFile</STRONG> - the HTML header to pre-pend to target
+	file
+    <LI><STRONG>FooterFile</STRONG> - the HTML footer to append to target file
+    <LI><STRONG>DatabaseFile</STRONG> - the database file of links
+
+<A NAME="logfile">
+
+    <LI><STRONG>LogFile</STRONG> - the log file for postings
+    </UL>
+
+<LI><STRONG>Administrator</STRONG> - the e-mail address to send notifications
+    to.
+
+<LI><STRONG>CategoryTemplate</STRONG> - the template used for displaying each
+    of the categories.
+
+<LI><STRONG>LinkTemplate</STRONG> - the template used for displaying each
+    of the links.
+
+<LI><STRONG>TextReject</STRONG> - a list of keywords which, if contained in the
+    posting, should cause a rejection.
+
+<LI><STRONG>TextRejectMessage</STRONG> - the message to display when a
+    TextReject occurs.
+
+<LI><STRONG>CaseTransform</STRONG> - whether to automatically drop second and
+    subsequent letters in a word to lower-case to prevent `shouting' (all caps)
+
+<LI><STRONG>CaseReject</STRONG> - the number of words posted in all-caps to
+    cause a rejection.
+
+<LI><STRONG>CaseRejectMessage</STRONG> - the message to display when a
+    CaseReject occurs.
+
+<LI><STRONG>DuplicateURLReject</STRONG> - whether to reject duplicate URLs
+    (based on path, not just on filename).
+
+<LI><STRONG>DuplicateURLRejectMessage</STRONG> - the message to display when a
+    DuplicateURLReject occurs.
+
+<LI><STRONG>MaximumCount</STRONG> - the maximum number of links to hold; oldest
+    links are moved where necessary.
+
+<LI><STRONG>MaximumSize</STRONG> - the maximum size of the database file (in
+    Kb); oldest links are moved where necessary.
+
+<LI><STRONG>DomainReject</STRONG> - which domains to reject postings for.
+
+<LI><STRONG>DomainRejectMessage</STRONG> - the message to display when a
+    DomainReject occurs.
+
+<LI><STRONG>Lifespan</STRONG> - the maximum lifespan (in days) of a posting,
+    before it is automatically removed.
+
+<LI><STRONG>TestURL</STRONG> - whether to automatically testing URLs during
+    posting, to ensure that it is valid.
+
+<LI><STRONG>TestURLTimeout</STRONG> - how long to wait before deciding that a
+    URL is invalid during testing.
+
+<LI><STRONG>TestURLMessage</STRONG> - the message to display if a URL is tested
+    false.
+
+<LI><STRONG>SortOrder</STRONG> - whether to display new postings at the end,
+    at the start or in alphabetical order.
+
+<A NAME="substitutelist">
+<LI><STRONG>SubstituteList</STRONG> - how to alter the posting before it gets
+    tested or posted.
+
+<LI><STRONG>Categories</STRONG> - which categories to permit and to display,
+    and in which order.
+
+<LI><STRONG>CategoryRejectMessage</STRONG> - message to display if an unknown
+    category is posted.
+
+<LI><STRONG>CategoryParam</STRONG> - the name of the supplied category
+    parameter for posting.
+
+<LI><STRONG>TitleParam</STRONG> - the name of the supplied title parameter for
+    posting.
+
+<LI><STRONG>UrlParam</STRONG> - the name of the supplied URL parameter for
+    posting.
+
+<LI><STRONG>DescriptionParam</STRONG> - the name of the supplied description
+    parameter for posting.
+
+<LI><STRONG>MaxTitleLen</STRONG> - the maximum length of title (longer than
+    this will be truncated).
+
+<LI><STRONG>MaxDescriptionLen</STRONG> - the maximum length of description
+    (longer than this will be truncated).
+
+<LI><STRONG>RejectIfTooLong</STRONG> - reject postings where the title or
+    description exceed MaxTitleLen and MaxDescriptionLen respectively, rather
+    than merely truncating.
+
+<LI><STRONG>MaxURLLen</STRONG> - maximum allowed length for the URL.
+
+<LI><STRONG>RejectIfTooLongMessage</STRONG> - message to display if a rejection
+    occurs based on length of URL, title or description.
+
+<LI><STRONG>MinTitleLen</STRONG> - the minimum length of title allowed.
+
+<LI><STRONG>MinDescriptionLen</STRONG> - the minimum length of description
+    allowed.
+
+<LI><STRONG>MinURLLen</STRONG> - the minimum length of URL allowed.
+
+<LI><STRONG>RejectIfTooShortMessage</STRONG> - message to display if a
+    rejection occurs based on length of URL, title or description.
+
+<LI><STRONG>AcceptMessage</STRONG> - message to display when a posting is
+    accepted.
+
+<LI><STRONG>URLPrefixAccept</STRONG> - URL prefixes (such as http:// or ftp://)
+    to accept.
+
+<LI><STRONG>Delimiter</STRONG> - the character(s) to split lists of items in
+    the config file.
+
+</UL>
+</BLOCKQUOTE>
+
+
+</DL>
+</BLOCKQUOTE>
+
+<H2>Troubleshooting</H2>
+
+<A NAME="syserrors">
+<H4>System Errors</H4>
+
+<BLOCKQUOTE>
+<DL>
+<DT><STRONG>System Error 1</STRONG>
+<DD>AFFA was unable to open the database file for updating; this is almost
+    always caused by incorrect permission settings on the database file. 
+
+<DT><STRONG>System Error 2</STRONG>
+<DD>You have enabled automatic URL-testing, however AFFA could not find the
+    necessary library (PERL library Socket.pm) to achieve this. Check your
+    PERL installation, or disable automatic URL-testing.
+
+<DT><STRONG>System Error 3</STRONG>
+<DD>You have configured an invalid substitution in the
+    <A HREF="#configuration">config file</A>
+    (<A HREF="#substitutelist">SubstituteList</A>). Please check the
+    substitution format carefully.
+
+<DT><STRONG>System Error 4</STRONG>
+<DD>AFFA was unable to open the target HTML file for updating; this is almost
+    always caused by incorrect permission settings on the target HTML file
+    file. 
+
+<DT><STRONG>System Error 5</STRONG>
+<DD>AFFA was unable to open the log file for updating; this is almost always
+    caused by incorrect permission settings on the log file. 
+
+<DT><STRONG>System Error 6</STRONG>
+<DD>The <A HREF="#configuration">config file</A> could not be opened for
+    reading. The config file should be named `AFFA.cfg' in the same directory
+    as AFFA, unless otherwise in the header of AFFA (edit the script to modify).
+
+<DT><STRONG>System Error 7</STRONG>
+<DD>The <A HREF="#configuration">config file</A> contains an error at the line
+    given. Check for syntax errors and typos.
+
+</DL>
+</BLOCKQUOTE>
+</td></tr></table>
+</BODY>
+
+<HTML>

@@ -1,0 +1,72 @@
+<HTML>
+<HEAD>
+	<TITLE>Previous Poll Results by Poll It v2.0! - CGI World</TITLE>
+</HEAD>
+<BODY Text=Black Link="#336699" VLink="Black">
+
+<CENTER> 
+
+
+<TABLE Width=70% CelLSpacing=0 CellPadding=6 Border=1 BorderColor=Black>
+<TR>
+   <TD BGCOLOR="#336699"> <B> <Font Face="Verdana,Arial" Size=3 Color=White>
+   Poll It v2.0 by CGI World - A Product of I2 Services, Inc.
+   </TD>
+</TR>
+
+<TR>
+   <TD BGCOLOR="#EEEEEE"> <Font Face="Verdana,Arial" Size=2>
+
+   <CENTER> <BR> <TABLE Width=95% CellPadding=4>
+   <FORM Action="$script_url$" Method=POST>
+   <INPUT Type="Hidden" Name="poll_id" Value="$poll_id$">
+
+   <TR><TD COLSPAN=2> <Font Face="Verdana,Arial" Size=3>
+
+   Below are the results to our previous poll. Thanks to the
+   $total$ participants who took part in this poll. 
+
+   <P>
+
+   <A HREF="$script_url$"><B>Click Here</B></A> to view our latest
+   opionion poll....
+
+   <P>
+
+   <HR SIZE=1>
+
+   Previous Poll Topic: <B>$poll_title$</B>
+
+   <HR SIZE=1>   </TD> </TR>
+
+   <!-- insert : $show_results$ -->
+   <!-- def : poll_results -->
+   <TR><TD Width=50%> <B>  <Font Face="Verdana,Arial" Size=2>
+   $poll_option$</TD><TD Width=50% VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+   $image_percent$ $percent$  - ($votes_received$ Votes)</TD></TR>
+   <!-- /def : poll_results -->
+
+   <!-- def : total_votes -->
+   <TR><TD COLSPAN=2> <Font Face="Verdana,Arial" Size=3>
+   <BR> Total Votes: <B> $total$ <P>
+
+   <HR SIZE=1> <Font Size=2>
+   Poll It Version 2.0 by <A HREF="http://www.cgi-world.com">CGI World</A>
+
+
+   </TD></TR>
+   <!-- /def : total_votes -->
+
+  
+   </FORM>
+   </TABLE> </CENTER>
+
+   </TD>
+</TR>
+</TABLE>
+
+
+
+</CENTER>
+</BODY>
+</HTML>

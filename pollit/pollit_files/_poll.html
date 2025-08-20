@@ -1,0 +1,67 @@
+<HTML>
+<HEAD>
+	<TITLE>Poll It v2.0! by CGI World</TITLE>
+
+</HEAD>
+<BODY Text=Black Link="#336699" VLink="Black">
+
+<CENTER> 
+
+
+
+<TABLE Width=70% CelLSpacing=0 CellPadding=5 Border=1 BorderColor=Black>
+<TR>
+   <TD BGCOLOR="#336699"> <B> <Font Face="Verdana,Arial" Size=3 Color=White>
+   Poll It v2.0 by CGI World - A Product of I2 Services, Inc.
+   </TD>
+</TR>
+
+<TR>
+   <TD BGCOLOR="#DDDDDD"> <Font Face="Verdana,Arial" Size=3>
+   Poll Title: <B>$poll_title$ </B>
+   </TD>
+</TR>
+<TR>
+   <TD BGCOLOR="#EEEEEE"> <Font Face="Verdana,Arial" Size=2>
+
+   <CENTER> <BR> <TABLE Width=95% CellPadding=4>
+   <FORM Action="$script_url$" Method=POST>
+   <INPUT Type="Hidden" Name="poll_id" Value="$poll_id$">
+
+   <!-- insert : $show_results$ -->
+   <!-- def : poll_results -->
+   <TR><TD Width=50%> <B>  <Font Face="Verdana,Arial" Size=2>
+   $poll_option$</TD><TD Width=50% VALIGN=TOP> <Font Face="Verdana,Arial" Size=2>
+   $image_percent$ $percent$ ($votes_received$ Votes)</TD></TR>
+   <!-- /def : poll_results -->
+
+   <!-- def : total_votes -->
+   <TR><TD COLSPAN=2> <Font Face="Verdana,Arial" Size=3>
+   <BR> <B>Total Votes: $total$ <HR Size=1>
+    </B></TD></TR>
+   <!-- /def : total_votes -->
+
+   <!-- insert : $display_options$  -->
+   <!-- def : show_options -->
+   <TR><TD VALIGN=TOP Width=2%><INPUT Type=Radio Name="option_selected" Value="$option_id$"></TD><TD><Font Face="Verdana,Arial" Size=2>$poll_option$ </TD></TR>
+   <!-- /def : show_options -->
+
+   <TR><TD COLSPAN=2>$submit$ <P> <Font Face="verdana,arial" Size=3>
+   $last_poll$ <P> <B><Font Size=2>
+
+   Poll It v2.0 by <A HREF="http://www.cgi-world.com">CGI World</A>
+
+   </TD></TR>
+   
+   </FORM>
+   </TABLE> </CENTER>
+
+   </TD>
+</TR>
+</TABLE>
+
+
+
+</CENTER>
+</BODY>
+</HTML>
