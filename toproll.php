@@ -1,0 +1,24 @@
+<?if ( !defined('wwwf_IN') ){die ("LAMER!!!!, you have been mangled.<br>
+$HTTP_USER_AGENT<br>
+$REMOTE_ADDR");}?>
+<tr><td><img src="white.gif" height="2" width="48"></td>
+<td><img src="white.gif" height="2" width="144"></td>
+<td><img src="white.gif" height="2" width="136"></td>
+<td><img src="white.gif" height="2" width="120"></td>
+<td><img src="white.gif" height="2" width="44"></td>
+<td><img src="white.gif" height="2" width="58"></td>
+<td><img src="white.gif" height="2" width="62"></td>
+<td><img src="white.gif" height="2" width="41"></td>
+<td><img src="white.gif" height="2" width="73"></td>
+<td><img src="white.gif" height="2" width="45"></td></tr>
+<tr><td bgcolor="ffffff"><A HREF="index.php"<?php if($_SERVER['PHP_SELF'] != "/index.php"){ ?> ONMOUSEOVER="changeImages('engnav1', 'images/engnav2.gif'); return true;" ONMOUSEOUT="changeImages('engnav1', 'images/engnav1.gif'); return true;"<?php } ?>><IMG alt="Policy of Liberty Home" NAME="engnav1" SRC="images/engnav<?php if($_SERVER['PHP_SELF'] == "/index.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="freemarket.php"<?php if($_SERVER['PHP_SELF'] != "/freemarket.php"){ ?> ONMOUSEOVER="changeImages('freenav1', 'images/freenav2.gif'); return true;" ONMOUSEOUT="changeImages('freenav1', 'images/freenav1.gif'); return true;"<?php } ?>><IMG alt="Free Market Textbook" NAME="freenav1" SRC="images/freenav<?php if($_SERVER['PHP_SELF'] == "/freemarket.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="books.php"<?php if($_SERVER['PHP_SELF'] != "/books.php"){ ?> ONMOUSEOVER="changeImages('booksnav1', 'images/booksnav2.gif'); return true;" ONMOUSEOUT="changeImages('booksnav1', 'images/booksnav1.gif'); return true;"<?php } ?>><IMG alt="Public Policy Books" NAME="booksnav1" SRC="images/booksnav<?php if($_SERVER['PHP_SELF'] == "/books.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="papers.php"<?php if($_SERVER['PHP_SELF'] != "/papers.php"){ ?> ONMOUSEOVER="changeImages('papersnav1', 'images/papersnav2.gif'); return true;" ONMOUSEOUT="changeImages('papersnav1', 'images/papersnav1.gif'); return true;"<?php } ?>><IMG alt="Articles and Papers" NAME="papersnav1" SRC="images/papersnav<?php if($PHP_SELF == "/papers.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="links.php"<?php if($PHP_SELF != "/links.php"){ ?> ONMOUSEOVER="changeImages('linksnav1', 'images/linksnav2.gif'); return true;" ONMOUSEOUT="changeImages('linksnav1', 'images/linksnav1.gif'); return true;"<?php } ?>><IMG alt="Links" NAME="linksnav1" SRC="images/linksnav<?php if($PHP_SELF == "/links.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="quotes.php"<?php if($PHP_SELF != "/quotes.php"){ ?> ONMOUSEOVER="changeImages('quotesnav1', 'images/quotesnav2.gif'); return true;" ONMOUSEOUT="changeImages('quotesnav1', 'images/quotesnav1.gif'); return true;"<?php } ?>><IMG alt="Quotes" NAME="quotesnav1" SRC="images/quotesnav<?php if($PHP_SELF == "/quotes.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="contact.php"<?php if($PHP_SELF != "/contact.php"){ ?> ONMOUSEOVER="changeImages('contactnav1', 'images/contactnav2.gif'); return true;" ONMOUSEOUT="changeImages('contactnav1', 'images/contactnav1.gif'); return true;"<?php } ?>><IMG alt="Contact Policy of Liberty" NAME="contactnav1" SRC="images/contactnav<?php if($PHP_SELF == "/contact.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="join.php"<?php if($PHP_SELF != "/join.php"){ ?> ONMOUSEOVER="changeImages('joinnav1', 'images/joinnav2.gif'); return true;" ONMOUSEOUT="changeImages('joinnav1', 'images/joinnav1.gif'); return true;"<?php } ?>><IMG alt="Join Policy of Liberty" NAME="joinnav1" SRC="images/joinnav<?php if($PHP_SELF == "/join.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<TD bgcolor="ffffff"><A HREF="about.php"<?php if($PHP_SELF != "/about.php"){ ?> ONMOUSEOVER="changeImages('aboutnav1', 'images/aboutnav2.gif'); return true;" ONMOUSEOUT="changeImages('aboutnav1', 'images/aboutnav1.gif'); return true;"<?php } ?>><IMG alt="About Dr. John Cobin" NAME="aboutnav1" SRC="images/aboutnav<?php if($PHP_SELF == "/about.php"){print "2";}else{print "1";} ?>.gif" height="21" BORDER="0"></A></TD>
+<td><img src="dkgreen.gif" height="21" width="45"></td></tr>
+<tr><td colspan="10"><img src="white.gif" height="2" width="771"></td></tr>
