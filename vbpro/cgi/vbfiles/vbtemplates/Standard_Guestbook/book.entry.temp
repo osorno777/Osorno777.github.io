@@ -1,0 +1,20 @@
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B>Full Name:</B>
+		</TD>
+		
+		<TD>
+			<A HREF="mailto:%%email%%">%%fullname%%</A>
+		</TD>
+	</TR>
+
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B>Home Page:</B>
+		</TD>
+		
+		<TD>
+			%%url_link_check%%
+		</TD>
+	</TR>
+

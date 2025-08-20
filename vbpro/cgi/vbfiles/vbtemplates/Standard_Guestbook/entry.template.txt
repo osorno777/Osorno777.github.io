@@ -1,0 +1,46 @@
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B><FONT FACE="Verdana, Arial, Helvetica" SIZE="2">Full Name:</FONT></B>
+		</TD>
+		
+		<TD>
+			 <FONT FACE="Verdana, Arial, Helvetica" SIZE="2"><A HREF="mailto:%%email%%">%%fullname%%</A> </FONT>
+		</TD>
+	</TR>
+
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B><FONT FACE="Verdana, Arial, Helvetica" SIZE="2">Home Page:</FONT></B>
+		</TD>
+		
+		<TD>
+	  	<FONT FACE="Verdana, Arial, Helvetica" SIZE="2">%%url_link_check%%</FONT>
+		</TD>
+	</TR>
+
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B><FONT FACE="Verdana, Arial, Helvetica" SIZE="2">Date and Time:</B>
+		</TD>
+		
+		<TD>
+			<FONT FACE="Verdana, Arial, Helvetica" SIZE="2"> %%sys_date%%, %%sys_time%% </FONT>
+		</TD>
+	</TR>
+
+	<TR>
+		<TD ALIGN="RIGHT">
+			<B><FONT FACE="Verdana, Arial, Helvetica" SIZE="2">Comments:</FONT> </B>
+		</TD>
+		
+		<TD>
+		 	<FONT FACE="Verdana, Arial, Helvetica" SIZE="2">%%comments%%</FONT>
+		</TD>
+	</TR>
+
+	<TR>
+		<TD COLSPAN="2">
+			&nbsp;
+		</TD>
+	</TR>
+	

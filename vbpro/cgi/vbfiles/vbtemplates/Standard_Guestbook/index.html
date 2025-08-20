@@ -1,0 +1,60 @@
+<HTML>
+<HEAD>
+	<TITLE>sign guestbook</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+<CENTER>
+<TABLE BORDER="0" CELLPADDING="2" CELLSPACING="0" WIDTH="440">
+	<TR>
+		<TD VALIGN="TOP">
+		<FONT FACE="Verdana, Helvetica, Arial" SIZE="2">
+		<B>Sign Guestbook</B>
+
+		<BR>
+		<BR>
+		
+		Get your name on our site! This is the form that will let you sign our guestbook.
+		Or, if you'd rather just <A HREF="%%entry_url%%">see the current entries</A>,
+		you can do that, too.
+		
+		<BR>
+		<BR>
+		
+		</FONT>
+		
+		<FORM ACTION="%%cgi_url%%" METHOD="POST">
+		<INPUT TYPE="hidden" NAME="do" VALUE="sign">
+		<INPUT TYPE="hidden" NAME="bookid" VALUE="%%bookid%%">
+		<TABLE BORDER="0" CELLPADDING="2" CELLSPACING="0">
+			<TR>
+				<TD ALIGN="RIGHT"><FONT FACE="Verdana, Helvetica, Arial" SIZE="2">Your Name:</FONT></TD>
+				<TD><INPUT TYPE="TEXT" NAME="fullname" SIZE="35"></TD>
+			</TR>
+			<TR>
+				<TD ALIGN="RIGHT"><FONT FACE="Verdana, Helvetica, Arial" SIZE="2">Your E-Mail:</FONT></TD>
+				<TD><INPUT TYPE="TEXT" NAME="email" SIZE="35"></TD>
+			</TR>
+			<TR>
+				<TD ALIGN="RIGHT"><FONT FACE="Verdana, Helvetica, Arial" SIZE="2">Your Web Site URL:</FONT></TD>
+				<TD><INPUT TYPE="TEXT" NAME="weburl" SIZE="35"></TD>
+			</TR>
+			<TR>
+				<TD VALIGN="TOP" ALIGN="RIGHT"><FONT FACE="Verdana, Helvetica, Arial" SIZE="2">Comments:</FONT></TD>
+				<TD><TEXTAREA NAME="comments" ROWS="6" COLS="50"></TEXTAREA></TD>
+			</TR>
+			<TR>
+				<TD COLSPAN="2" ALIGN="CENTER"><INPUT TYPE="submit" NAME="Send Entry" VALUE="Send Entry"></TD>
+			</TR>
+		</TABLE>
+		</FORM>
+
+		<BR>
+		<HR NOSHADE SIZE="1">
+		</TD>
+	</TR>
+</TABLE>
+</CENTER>
+
+</BODY>
+</HTML>

@@ -1,0 +1,3 @@
+<web-app>
+  <servlet-mapping url-pattern='*.xml' servlet-name='xsl.Dispatch'/>
+</web-app>
