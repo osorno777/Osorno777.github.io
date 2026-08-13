@@ -6,13 +6,68 @@ from translation_qa.models import Finding, Severity
 
 # Patterns that show up when a model refuses, hedges, or narrates instead of translating.
 _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("ai_self_id", re.compile(r"\b(as an ai|as an artificial intelligence|i am an ai|soy una? (ia|inteligencia artificial)|como inteligencia artificial|??????|??????)\b", re.I)),
-    ("cannot_assist", re.compile(r"\b(i (can'?t|cannot|am unable to|won'?t be able to) (help|assist|provide|translate|continue|generate|comply)|no puedo (ayudar|traducir|continuar|proporcionar)|??[?,]????|???(??|??|??))\b", re.I)),
-    ("policy_block", re.compile(r"\b(against my (guidelines|policies)|content policy|usage policy|i must decline|i (have to|must) refuse|??.{0,12}??|???.{0,12}??)\b", re.I)),
-    ("meta_translation", re.compile(r"\b(here is (the|a) translation|sure[,.]? i('ll| will) translate|the following is (a |the )?translation|a continuaci[oó]n (est[aá]|va) la traducci[oó]n|?????)\b", re.I)),
-    ("partial_stop", re.compile(r"\b(i('ll| will) stop (here|at this point)|translation (stops|ends) here|unable to (finish|complete) the translation)\b", re.I)),
-    ("copyright_block", re.compile(r"\b(i (can'?t|cannot) (reproduce|provide copyrighted)|due to copyright)\b", re.I)),
-    ("placeholder", re.compile(r"\[(?:refusal|redacted|omitted|unable to translate|todo|tbd|insert translation)\]", re.I)),
+    (
+        "ai_self_id",
+        re.compile(
+            r"\b(as an ai|as an artificial intelligence|i am an ai|"
+            r"soy una? (ia|inteligencia artificial)|como inteligencia artificial|"
+            r"\u4f5c\u4e3a\u4eba\u5de5\u667a\u80fd|\u6211\u662f\u4eba\u5de5\u667a\u80fd)\b",
+            re.I,
+        ),
+    ),
+    (
+        "cannot_assist",
+        re.compile(
+            r"\b(i (can'?t|cannot|am unable to|won'?t be able to) "
+            r"(help|assist|provide|translate|continue|generate|comply)|"
+            r"no puedo (ayudar|traducir|continuar|proporcionar)|"
+            r"\u62b1\u6b49[,\uff0c]?\u6211\u65e0\u6cd5|"
+            r"\u6211\u4e0d\u80fd(\u5e2e\u52a9|\u7ffb\u8bd1|\u7ee7\u7eed))\b",
+            re.I,
+        ),
+    ),
+    (
+        "policy_block",
+        re.compile(
+            r"\b(against my (guidelines|policies)|content policy|usage policy|"
+            r"i must decline|i (have to|must) refuse|"
+            r"\u8fdd\u53cd.{0,12}\u653f\u7b56|\u4e0d\u7b26\u5408.{0,12}\u89c4\u5b9a)\b",
+            re.I,
+        ),
+    ),
+    (
+        "meta_translation",
+        re.compile(
+            r"\b(here is (the|a) translation|sure[,.]? i('ll| will) translate|"
+            r"the following is (a |the )?translation|"
+            r"a continuaci[o\u00f3]n (est[a\u00e1]|va) la traducci[o\u00f3]n|"
+            r"\u4ee5\u4e0b\u662f\u7ffb\u8bd1)\b",
+            re.I,
+        ),
+    ),
+    (
+        "partial_stop",
+        re.compile(
+            r"\b(i('ll| will) stop (here|at this point)|"
+            r"translation (stops|ends) here|"
+            r"unable to (finish|complete) the translation)\b",
+            re.I,
+        ),
+    ),
+    (
+        "copyright_block",
+        re.compile(
+            r"\b(i (can'?t|cannot) (reproduce|provide copyrighted)|due to copyright)\b",
+            re.I,
+        ),
+    ),
+    (
+        "placeholder",
+        re.compile(
+            r"\[(?:refusal|redacted|omitted|unable to translate|todo|tbd|insert translation)\]",
+            re.I,
+        ),
+    ),
 ]
 
 

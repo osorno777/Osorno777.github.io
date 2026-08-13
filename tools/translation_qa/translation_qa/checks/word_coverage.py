@@ -6,7 +6,12 @@ from difflib import SequenceMatcher
 from translation_qa.models import Finding, Severity
 from translation_qa.segment import Token, content_words
 
-_PROPER_RE = re.compile(r"^[A-ZÁÉÍÓÚÜÑÀÈÌÒÙÄÖÅÆØÇ][A-Za-zÁÉÍÓÚÜÑÀÈÌÒÙÄÖÅÆØÇ'’-]+$")
+_PROPER_RE = re.compile(
+    r"^[A-Z\u00c0-\u00d6\u00d8-\u00de][A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff'\u2019-]+$"
+)
+_NAME_CANDIDATE_RE = re.compile(
+    r"[A-Za-z\u00c0-\u00ff\u0100-\u017e\u0400-\u04ff]{3,}"
+)
 
 
 def check_word_coverage(english: str, translated: str, *, sentence_index: int | None = None) -> list[Finding]:
@@ -93,7 +98,6 @@ def _present(token: Token, translated: str, tr_fold: str) -> str:
         compact = re.sub(r"\s+", "", raw.lower())
         if compact in re.sub(r"\s+", "", translated.lower()):
             return "present"
-        # Chapter:verse often survives even when the book name is localized.
         verse = re.search(r"\d+:\d+", raw)
         if verse and verse.group(0) in translated:
             return "present"
@@ -116,8 +120,7 @@ def _is_proper(token: Token, sentence: str) -> bool:
 def _fuzzy_name(name: str, translated: str) -> bool:
     if len(name) < 4:
         return False
-    candidates = re.findall(r"[A-Za-zÁ-ÿ?-ž?-?]{3,}", translated)
-    for candidate in candidates:
+    for candidate in _NAME_CANDIDATE_RE.findall(translated):
         if SequenceMatcher(None, name.lower(), candidate.lower()).ratio() >= 0.78:
             return True
     return False

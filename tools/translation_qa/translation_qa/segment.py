@@ -38,8 +38,21 @@ _ABBREVIATIONS = {
     "ital",
 }
 
-_SENTENCE_SPLIT = re.compile(r"(?<=[.!?…])\s+(?=[\"'“(\[]?[A-ZÁÉÍÓÚÜÑÀÈÌÒÙÄÖÅÆØÇ0-9])")
-_WORD_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ?-ž?-??-?\u4e00-\u9fff'’]+|\d+(?:[.,]\d+)?", re.UNICODE)
+_LATIN_UPPER = (
+    "A-Z\u00c0-\u00d6\u00d8-\u00de"
+)
+_WORD_CHARS = (
+    "A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff"
+    "\u0100-\u017e\u0400-\u04ff\u0386-\u03ce\u4e00-\u9fff"
+)
+
+_SENTENCE_SPLIT = re.compile(
+    rf"(?<=[.!?\u2026])\s+(?=[\"'\u201c(\[]?[{_LATIN_UPPER}0-9])"
+)
+_WORD_RE = re.compile(
+    rf"[{_WORD_CHARS}'\u2019]+|\d+(?:[.,]\d+)?",
+    re.UNICODE,
+)
 _SCRIPTURE_RE = re.compile(
     r"\b(?:[1-3]\s*)?"
     r"(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|"
@@ -51,7 +64,7 @@ _SCRIPTURE_RE = re.compile(
     r"Gen|Exod|Ex|Lev|Num|Deut|Josh|Judg|Sam|Kgs|Chr|Neh|Esth|Ps|Prov|Eccl|Isa|"
     r"Jer|Lam|Ezek|Dan|Hos|Obad|Mic|Nah|Hab|Zeph|Hag|Zech|Mal|Matt|Rom|Cor|Gal|"
     r"Eph|Phil|Col|Thess|Tim|Phlm|Heb|Jas|Pet|Rev)"
-    r"\.?\s+\d+:\d+(?:\s*[-–]\s*\d+)?\b",
+    r"\.?\s+\d+:\d+(?:\s*[-]\s*\d+)?\b",
     re.IGNORECASE,
 )
 
@@ -68,7 +81,7 @@ ENGLISH_STOPWORDS = {
     "he", "him", "his", "she", "her", "hers", "they", "them", "their", "theirs",
     "we", "us", "our", "ours", "you", "your", "yours", "i", "me", "my", "mine",
     "one", "two", "some", "any", "each", "every", "all", "both", "few", "more",
-    "most", "other", "another", "own", "same", "than", "because", "while",
+    "most", "other", "another", "own", "same", "because", "while",
     "although", "though", "whether", "until", "unless", "once", "upon",
 }
 
@@ -125,7 +138,7 @@ def content_words(text: str) -> list[Token]:
         if token.kind == "number":
             words.append(token)
             continue
-        folded = token.text.lower().replace("’", "'")
+        folded = token.text.lower().replace("\u2019", "'")
         if folded in ENGLISH_STOPWORDS:
             continue
         if len(folded) <= 1:

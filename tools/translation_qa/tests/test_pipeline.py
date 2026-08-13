@@ -9,7 +9,7 @@ def test_pipeline_flags_refusal_and_omission():
     )
     translated = (
         "I cannot assist with that religious content. "
-        "Cristo sufrió. La iglesia no debe bendecir el robo estatal."
+        "Cristo sufrio. La iglesia no debe bendecir el robo estatal."
     )
     result = audit_texts(english, translated, "es", word_by_word=True, use_llm=False)
     severities = {item.severity for item in result.findings}

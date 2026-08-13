@@ -61,10 +61,10 @@ NAME_TO_CODE.update(
         "portuguese brazilian": "pt-br",
         "castilian": "es",
         "espanol": "es",
-        "español": "es",
+        "espa\u00f1ol": "es",
         "deutsch": "de",
         "norsk": "no",
         "bokmal": "no",
-        "bokmål": "no",
+        "bokm\u00e5l": "no",
     }
 )

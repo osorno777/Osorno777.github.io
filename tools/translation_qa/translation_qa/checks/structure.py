@@ -5,8 +5,9 @@ import re
 from translation_qa.models import Document, Finding, Severity
 
 _CHAPTER_RE = re.compile(
-    r"(?im)^\s*(chapter|cap[ií]tulo|chapitre|kapitel|rozdzia?|?????|?)\s+"
-    r"([0-9ivxlcdm]+|[???????????]+)\b"
+    r"(?im)^\s*(chapter|cap[i\u00ed]tulo|chapitre|kapitel|"
+    r"rozdzia\u0142|\u0433\u043b\u0430\u0432\u0430|\u7ae0)\s+"
+    r"([0-9ivxlcdm]+|[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+)\b"
 )
 
 
