@@ -1,0 +1,7 @@
+# Local translation-QA artifacts (never commit secrets or reports)
+tools/translation_qa/.env
+tools/translation_qa/.venv/
+tools/translation_qa/venv/
+tools/translation_qa/reports/
+tools/translation_qa/.cache/
+tools/translation_qa/paths.json
