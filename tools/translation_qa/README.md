@@ -2,16 +2,41 @@
 
 Slow, sentence-aligned, word-by-word audit of Alertness Books translations against the English sources. It looks for the defects that remain after DeepSeek drafts and Grok/Claude cleanup: refusals, leftover English, dropped numbers and scripture, missing names, truncated books, and (optionally) missing word meanings.
 
-This Cloud Agent cannot read files on your Windows PC. Copy this folder to the machine that has the PDFs, or run it there against:
+These files live in the GitHub repo, **not** in `C:\Users\dinam`. `cd tools\translation_qa` from your user home folder will fail until you download the repo first.
 
-- `C:\Users\dinam\Documents\Writing\...`
-- `C:\Alertness AI\website books`
+## Get the files onto this Windows PC
+
+In PowerShell, from `C:\Users\dinam`:
+
+```powershell
+cd $HOME
+git clone --branch cursor/translation-veracity-checker-03d4 --single-branch https://github.com/osorno777/Osorno777.github.io.git
+cd Osorno777.github.io\tools\translation_qa
+.\setup.bat
+```
+
+If `git` is not installed, download the zip instead:
+
+https://github.com/osorno777/Osorno777.github.io/archive/refs/heads/cursor/translation-veracity-checker-03d4.zip
+
+Extract it, then:
+
+```powershell
+cd $HOME\Downloads\Osorno777.github.io-cursor-translation-veracity-checker-03d4\tools\translation_qa
+.\setup.bat
+```
+
+The zip extract folder name can differ slightly. If `cd` fails, open File Explorer, search for `setup.bat` inside the extracted folder, then Shift+right-click that folder and choose **Open PowerShell window here**.
 
 ## Install
 
+`setup.bat` installs Python packages and copies `.env.example` to `.env` and `paths.example.json` to `paths.json`. Or do it by hand:
+
 ```bat
-cd tools\translation_qa
+cd Osorno777.github.io\tools\translation_qa
 py -m pip install -r requirements.txt
+copy .env.example .env
+copy paths.example.json paths.json
 ```
 
 ## Passwords
