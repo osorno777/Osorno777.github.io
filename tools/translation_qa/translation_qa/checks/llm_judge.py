@@ -87,7 +87,7 @@ def judge_pair(
 def _provider_config() -> tuple[str, str, str, str]:
     judge = (os.environ.get("TRANSLATION_QA_JUDGE") or "").strip().lower()
     order = [judge] if judge else []
-    order.extend(["anthropic", "openai", "xai", "openrouter", "deepseek"])
+    order.extend(["xai", "anthropic", "openai", "openrouter", "deepseek"])
     seen: set[str] = set()
     for name in order:
         if not name or name in seen:
@@ -111,7 +111,7 @@ def _provider_config() -> tuple[str, str, str, str]:
             return (
                 "xai",
                 os.environ["XAI_API_KEY"],
-                os.environ.get("XAI_MODEL", "grok-4"),
+                os.environ.get("XAI_MODEL", "grok-4.6"),
                 "https://api.x.ai/v1/chat/completions",
             )
         if name == "openrouter" and os.environ.get("OPENROUTER_API_KEY"):

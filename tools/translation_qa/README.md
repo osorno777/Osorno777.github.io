@@ -66,7 +66,7 @@ py -m translation_qa check --english "C:\Users\dinam\Documents\Writing\John Cobi
 py -m translation_qa scan --config paths.json --delay 1.5 --llm
 ```
 
-`--llm` turns on the slow word-meaning judge. Set `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (or xAI / OpenRouter / DeepSeek) in `.env`. Prefer a different model family than the one that produced the translation.
+`--llm` turns on the slow word-meaning judge. The default judge is **Grok 4.6** (`XAI_MODEL=grok-4.6`). Set `XAI_API_KEY` in `.env`. The current trial without `--llm` only runs the deterministic checks (refusals, numbers, leftover English, names).
 
 Trial run on the first 25 aligned sentences:
 
