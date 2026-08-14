@@ -25,6 +25,10 @@ dir /b reports\*.html 2>nul
 if errorlevel 1 echo   (none - a new catalog scan will start at 0)
 
 echo.
+echo --- Freeing disk: delete bulky JSON/CSV copies and shrink oversized HTML (summaries kept) ---
+py -m translation_qa compact-reports --output reports
+
+echo.
 echo --- Inventory of every PDF the checker can see ---
 py -m translation_qa inventory --config paths.json
 echo.

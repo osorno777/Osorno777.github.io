@@ -18,9 +18,9 @@ cd tools\translation_qa
 .\rescan.bat
 ```
 
-`rescan.bat` lists every catalog PDF it can see, writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a report, so you can stop and rerun.
+`rescan.bat` writes compact HTML reports (counts plus examples, not 10k-row dumps). It deletes leftover JSON/CSV copies first so a long BTC scan cannot fill `C:`. Resume skips HTML reports already written. If a scan dies with `No space left on device`, empty the Recycle Bin, run `.\rescan.bat` again, and it continues from the first pair that has no HTML yet.
 
-If a scan is already printing the **correct** 152-pair KDP PDF catalog, leave it running. Resume skips HTML reports already written. Only stop it if it is pairing the wrong books.
+If a scan is already printing the **correct** catalog, leave it running. Only stop it if it is pairing the wrong books, or if Windows says the disk is full.
 
 If you do not have the clone yet:
 
@@ -126,6 +126,7 @@ Use the bookstore PDF passwords you already keep locally (BTC / SU / BTW / econ)
 ```bat
 py -m translation_qa inventory --config paths.json
 py -m translation_qa list --config paths.json
+py -m translation_qa compact-reports --output reports
 py -m translation_qa scan --config paths.json
 py -m translation_qa scan --config paths.json --force
 py -m translation_qa scan --config paths.json --llm --delay 1.5
@@ -150,7 +151,7 @@ If `list` still shows only a few pairs, paste `tools\translation_qa\reports\list
 5. **Word-by-word coverage** - every English content word is examined; names, numbers, and citations must appear; short/long sentence ratios flag dropped or added clauses.
 6. **Optional LLM judge** - one aligned sentence at a time, with `--delay`, asking whether each content word's meaning is present, reversed, or refused.
 
-Reports are written as HTML, CSV, and JSON under `reports/`.
+Reports are written under `reports/` as compact HTML (all critical/refusal/warning rows, defect counts by check, and the first 150 defect examples) plus a small JSON summary. Full 10k-row JSON/CSV dumps filled the disk on a BTC HTML pass; use `--full-reports` only if you have spare space. `.\rescan.bat` runs `compact-reports` first so leftover bulky copies are deleted before the scan resumes.
 
 ## Tests
 

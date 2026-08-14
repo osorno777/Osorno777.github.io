@@ -15,7 +15,7 @@ from translation_qa.discover import (
 from translation_qa.extract import ExtractionError
 from translation_qa.passwords import load_dotenv, load_pdf_passwords
 from translation_qa.pipeline import audit_files
-from translation_qa.report import write_reports
+from translation_qa.report import DiskFullError, compact_existing_reports, write_reports
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -38,6 +38,12 @@ def main(argv: list[str] | None = None) -> int:
     scan.add_argument("--force", action="store_true", help="Redo pairs that already have an HTML report.")
     _add_common(scan)
 
+    compact = sub.add_parser(
+        "compact-reports",
+        help="Delete bulky JSON/CSV copies and shrink oversized HTML tables. Keeps HTML summaries.",
+    )
+    compact.add_argument("--output", type=Path, default=Path("reports"))
+
     listing = sub.add_parser("list", help="Show which English/translation pairs the config would check.")
     listing.add_argument("--config", required=True, type=Path)
 
@@ -48,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     output_dir: Path = getattr(args, "output", Path("reports"))
     passwords = load_pdf_passwords()
 
-    if args.command not in {"list", "inventory"} and not passwords:
+    if args.command not in {"list", "inventory", "compact-reports"} and not passwords:
         print(
             "No PDF_PASSWORDS set. Encrypted PDFs will fail. "
             "Copy .env.example to .env and add semicolon-separated passwords.",
@@ -69,9 +75,21 @@ def main(argv: list[str] | None = None) -> int:
                 passwords=passwords,
             )
             stem = f"{args.english.stem}__{args.translated.stem}__{language}"
-            paths = write_reports(result, output_dir, _safe(stem))
+            try:
+                paths = write_reports(result, output_dir, _safe(stem), full=args.full_reports)
+            except DiskFullError as exc:
+                print(_disk_full_message(exc), file=sys.stderr)
+                return 2
             _print_summary(result, paths)
             return _exit_code(result)
+
+        if args.command == "compact-reports":
+            stats = compact_existing_reports(output_dir)
+            print(
+                f"Freed report disk space: deleted {stats['deleted_json']} JSON and "
+                f"{stats['deleted_csv']} CSV copies; shrunk {stats['shrunk_html']} oversized HTML file(s)."
+            )
+            return 0
 
         config = load_config(args.config)
         output_dir = Path(config.get("output_dir") or output_dir)
@@ -148,7 +166,14 @@ def main(argv: list[str] | None = None) -> int:
                 failed += 1
                 print(f"  skip unreadable: {exc}", file=sys.stderr)
                 continue
-            paths = write_reports(result, output_dir, stem)
+            try:
+                paths = write_reports(result, output_dir, stem, full=args.full_reports)
+            except DiskFullError as exc:
+                print(_disk_full_message(exc), file=sys.stderr)
+                if exc.html_written:
+                    print(f"  HTML saved for {stem}; that pair will be skipped on resume.", file=sys.stderr)
+                print("Scan stopped so the rest of the catalog is not lost to a full disk.", file=sys.stderr)
+                return 2
             _print_summary(result, paths)
             worst = max(worst, _exit_code(result))
         if skipped:
@@ -224,6 +249,20 @@ def _add_common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--llm", action="store_true", help="Enable the slow LLM word-meaning judge.")
     parser.add_argument("--delay", type=float, default=0.0, help="Seconds to wait after each LLM sentence (slow mode).")
     parser.add_argument("--max-sentences", type=int, default=None, help="Limit aligned sentences (useful for a trial run).")
+    parser.add_argument(
+        "--full-reports",
+        action="store_true",
+        help="Write every defect row to HTML/JSON/CSV. Default reports keep counts plus examples so the disk does not fill.",
+    )
+
+
+def _disk_full_message(exc: DiskFullError) -> str:
+    where = exc.path
+    return (
+        f"DISK FULL while writing {where}. "
+        "Free space on C: (empty Recycle Bin; delete reports\\*.json and reports\\*.csv), "
+        "then rerun .\\rescan.bat. HTML reports already written are kept and skipped on resume."
+    )
 
 
 def _print_summary(result, paths: dict[str, Path]) -> None:
