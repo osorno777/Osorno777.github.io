@@ -72,6 +72,8 @@ py -m translation_qa list --config paths.json
 py -m translation_qa scan --config paths.json
 ```
 
+Or run `rescan.bat` from `tools\translation_qa`. It pulls, overwrites `paths.json` from the example, lists every English book and pair, then scans the full catalog.
+
 `list` should show far more than 3 pairs. If a translation is missing, put the language in the filename or folder (`_es`, `(Spanish)`, or an `es` folder).
 
 ```bat
