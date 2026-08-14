@@ -55,12 +55,24 @@ Use the bookstore PDF passwords you already keep locally (BTC / SU / BTW / econ)
 py -m translation_qa check --english "C:\Users\dinam\Documents\Writing\John Cobin Writings\SUFFERING UNJUSTLY\Suffering Unjustly (2026).pdf" --translated "C:\Users\dinam\Documents\Writing\John Cobin Writings\SUFFERING UNJUSTLY\Padeciendo Injustamente (2026).pdf" --lang es --output reports
 ```
 
-## Whole catalog (20 books × languages)
+## Whole catalog (all books × languages)
 
-1. Copy `paths.example.json` to `paths.json`.
-2. Keep or add every English source path.
-3. Point `translations_dir` at `C:\Alertness AI\website books`.
-4. Name translation files so the language is visible (`_es`, `(Spanish)`, a `de` folder, and so on).
+`paths.example.json` now scans:
+
+- English PDFs under `C:\Users\dinam\Documents\Writing`
+- Translations under `C:\Alertness AI\website books`
+
+It skips `DO-NOT-USE` / `BIODUP` files and will not compare two English interiors of the same book.
+
+After `git pull`, copy the new example over your old config, then list pairs before scanning:
+
+```bat
+copy /Y paths.example.json paths.json
+py -m translation_qa list --config paths.json
+py -m translation_qa scan --config paths.json
+```
+
+`list` should show far more than 3 pairs. If a translation is missing, put the language in the filename or folder (`_es`, `(Spanish)`, or an `es` folder).
 
 ```bat
 py -m translation_qa scan --config paths.json --delay 1.5 --llm

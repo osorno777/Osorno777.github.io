@@ -66,10 +66,11 @@ def main(argv: list[str] | None = None) -> int:
         output_dir = Path(config.get("output_dir") or output_dir)
         pairs = discover_pairs(config)
         if args.command == "list":
+            english_count = len({pair.book_id for pair in pairs})
             if not pairs:
-                print("No pairs found. Check english_sources, translations_dir, and filenames.")
+                print("No pairs found. Check english_dirs, translations_dir, and filenames.")
                 return 2
-            print(f"Found {len(pairs)} pair(s):")
+            print(f"Found {len(pairs)} pair(s) across {english_count} English book(s):")
             for pair in pairs:
                 print(f"  {pair.book_id} | {pair.language} | {pair.translated}")
             return 0
