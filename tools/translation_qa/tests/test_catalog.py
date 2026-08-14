@@ -1,9 +1,12 @@
-from translation_qa.catalog import BOOKS
-from translation_qa.discover import catalog_book_id, infer_book_id
 from pathlib import Path
 
+from translation_qa.catalog import BOOKS
+from translation_qa.discover import catalog_book_id, infer_book_id
 
-def test_catalog_has_twenty_store_titles():
+
+def test_catalog_source_is_utf8():
+    path = Path(__file__).resolve().parents[1] / "translation_qa" / "catalog.py"
+    path.read_text(encoding="utf-8")
     ids = {book.id for book in BOOKS}
     assert "bearing-the-cross" in ids
     store_ids = ids - {"bearing-the-cross"}

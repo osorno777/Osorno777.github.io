@@ -310,7 +310,7 @@ SHORT_CODES = {
     "stf": "sentenced-to-the-future",
 }
 
-# Numbered website-book stems (01_ / 03b_ / …). Longer prefixes must come first.
+# Numbered website-book stems (01_ / 03b_ / 05_). Longer prefixes must come first.
 NUMBERED_STEMS: tuple[tuple[str, str], ...] = (
     ("03b", "public-choice"),
     ("01", "ai-augmented-personal-finance"),
