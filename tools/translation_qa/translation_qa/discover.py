@@ -302,10 +302,7 @@ def discover_pairs(
             pair = _pair_for_file(translated, english_by_id, passwords, peek)
             if pair is None:
                 continue
-            key = (
-                str(pair.english.resolve()) if pair.english.exists() else str(pair.english),
-                str(pair.translated),
-            )
+            key = _file_key(pair.translated)
             if key in seen:
                 continue
             seen.add(key)
@@ -746,3 +743,10 @@ def _same_file(left: Path, right: Path) -> bool:
         return left.resolve() == right.resolve()
     except OSError:
         return left == right
+
+
+def _file_key(path: Path) -> str:
+    try:
+        return str(path.resolve()).replace("\\", "/").lower()
+    except OSError:
+        return str(path).replace("\\", "/").lower()

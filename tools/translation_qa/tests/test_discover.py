@@ -83,6 +83,26 @@ def test_discover_skips_english_interiors_and_do_not_use(tmp_path):
     assert pairs[0].language == "es"
 
 
+def test_same_translation_file_is_only_paired_once(tmp_path):
+    english = tmp_path / "english"
+    website = tmp_path / "website"
+    english.mkdir()
+    website.mkdir()
+    (english / "Austrian Economics.pdf").write_bytes(b"%PDF")
+    pdf = website / "Austrian_Economics_A_Primer_ES_2026_ebook.pdf"
+    pdf.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(english)],
+            "translations_dirs": [str(website), str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].translated.name == pdf.name
+
+
 def test_scan_refuses_english_interior_as_translation(tmp_path, capsys):
     english = tmp_path / "Behind the Walls (2026).pdf"
     interior = tmp_path / "Behind the Walls (2026) INTERIOR 396pp v3 FINAL-20260729.pdf"
