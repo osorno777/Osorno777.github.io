@@ -74,6 +74,60 @@ def test_store_catalog_points_at_private_html(tmp_path):
     ]
 
 
+def test_public_list_catalog_maps_slug_lang(tmp_path):
+    english = tmp_path / "english"
+    bookstore = tmp_path / "bookstore"
+    public = bookstore / "public"
+    out = bookstore / "fulfillment" / "_out"
+    snapshot = bookstore / "_live_20260729-191923"
+    english.mkdir()
+    public.mkdir(parents=True)
+    out.mkdir(parents=True)
+    snapshot.mkdir()
+    (english / "Bearing the Cross BOOK FIVE Casablanca part 2.pdf").write_bytes(b"%PDF")
+    html = out / "btc-5_bn.html"
+    html.write_text("<html><body><p>Bengali BTC 5.</p></body></html>", encoding="utf-8")
+    (snapshot / "btc-5_bn.html").write_text("<html><body><p>old snapshot</p></body></html>", encoding="utf-8")
+    catalog = public / "store_catalog.json"
+    catalog.write_text(
+        json.dumps(
+            [
+                {
+                    "slug": "btc-5",
+                    "lang": "bn",
+                    "isbn": "979-8-90593-040-9",
+                    "status": "hold",
+                    "title": "BTC 5 BN",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (snapshot / "store_catalog.json").write_text(catalog.read_text(encoding="utf-8"), encoding="utf-8")
+    assert parse_store_catalog(catalog) == [html]
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(english)],
+            "translations_dir": str(empty),
+            "store_catalog": str(catalog),
+            "peek_language": False,
+        }
+    )
+    assert [(pair.book_id, pair.language, pair.translated.name) for pair in pairs] == [
+        ("bearing-the-cross-5", "bn", "btc-5_bn.html")
+    ]
+    snapshot_pairs = discover_pairs(
+        {
+            "english_dirs": [str(english)],
+            "translations_dir": str(snapshot),
+            "peek_language": False,
+        }
+    )
+    assert all("_live_" not in str(pair.translated).replace("\\", "/") for pair in snapshot_pairs)
+
+
 def test_contaminated_bak_and_stale_are_skipped(tmp_path):
     english = tmp_path / "english"
     out = tmp_path / "bookstore" / "fulfillment" / "_out"

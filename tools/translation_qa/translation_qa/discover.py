@@ -733,6 +733,8 @@ def _skip_path(path: Path) -> bool:
             return True
         if marker == "_bak" and any(part.endswith("_bak") for part in parts):
             return True
+        if any(part.startswith("_live_") for part in parts):
+            return True
     return False
 
 

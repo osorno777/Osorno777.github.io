@@ -77,6 +77,7 @@ Confirmed on this Windows PC (3518 local hits, 2026-08-14):
 - Refusal tool: `C:\Alertness AI\bookstore\qr_fix\fix_refusal_text.py`
 - Not live: `fulfillment\*_bak`, `CONTAMINATED`, `STALE`, and `_safety\backups\...\admin\translations\private` (27 July precutover backup)
 - `admin\translations\private` was not found as a current folder, only in that backup
+- Live catalog: `C:\Alertness AI\bookstore\public\store_catalog.json` (same JSON as https://alertnessbooks.com/store_catalog.json). Dated `_live_*` folders are snapshots, not current.
 
 Do not re-run `find_claude_scanners.ps1` against all of `C:\Alertness AI` (that walk hit 19,090 church-directory scripts).
 
