@@ -39,3 +39,24 @@ def test_all_twenty_english_filenames_resolve():
 
 def test_isbn_catalog_match():
     assert catalog_book_id(Path("kdp_9798905935367_fr.pdf")) == "public-choice"
+
+
+def test_numbered_website_stems():
+    assert catalog_book_id(Path("01_ai_augmented_personal_finance_es.pdf")) == "ai-augmented-personal-finance"
+    assert catalog_book_id(Path("03_austrian_economics_primer.pdf")) == "austrian-economics"
+    assert catalog_book_id(Path("03b_public_choice_primer.pdf")) == "public-choice"
+    assert catalog_book_id(Path("05_surviving_chilean_justice.pdf")) == "surviving-chilean-justice"
+    assert catalog_book_id(Path("STF_es.pdf")) == "sentenced-to-the-future"
+    assert catalog_book_id(Path("prolife_policy.pdf")) == "pro-life-policy"
+    assert catalog_book_id(Path("prolife_policy_es.pdf")) == "pro-life-policy"
+
+
+def test_kdp_public_choice_filename():
+    assert (
+        catalog_book_id(Path("Public_Choice_A_Primer_AF_2026_ebook_979-8-90593-726-2.pdf"))
+        == "public-choice"
+    )
+    assert (
+        catalog_book_id(Path("Austrian_Economics_A_Primer_ES_2026_ebook.pdf"))
+        == "austrian-economics"
+    )

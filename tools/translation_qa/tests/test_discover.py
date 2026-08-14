@@ -2,12 +2,21 @@ from pathlib import Path
 
 from translation_qa.cli import main
 from translation_qa.discover import (
+    catalog_book_id,
     discover_pairs,
     infer_book_id,
     infer_language,
     select_english_sources,
     unmatched_translations,
 )
+
+
+def catalog_id(path):
+    return catalog_book_id(path) or infer_book_id(path)
+
+
+def _english(config):
+    return select_english_sources(config)
 
 
 def test_unmatched_lists_english_interiors(tmp_path):
@@ -308,3 +317,172 @@ def test_discover_does_not_crash_on_latin1_txt(tmp_path):
     )
     assert len(pairs) == 1
     assert pairs[0].translated.name.endswith(".txt")
+
+
+def test_kdp_public_choice_is_not_christian_theology(tmp_path):
+    writing = tmp_path / "Writing"
+    writing.mkdir()
+    (writing / "Christian Theology of Public Policy.pdf").write_bytes(b"%PDF")
+    (writing / "A Primer on Modern Themes in Free Market Economics and Policy.pdf").write_bytes(b"%PDF")
+    website = tmp_path / "website"
+    kdp = website / "PDF" / "kdp_by_isbn"
+    kdp.mkdir(parents=True)
+    (website / "03b_public_choice_primer.pdf").write_bytes(b"%PDF")
+    af = kdp / "Public_Choice_A_Primer_AF_2026_ebook_979-8-90593-726-2.pdf"
+    af.write_bytes(b"%PDF")
+    paperback = kdp / "Public_Choice_A_Primer_AF_2026_paperback_979-8-90593-725-5.pdf"
+    paperback.write_bytes(b"%PDF")
+    config = {
+        "english_dirs": [str(writing), str(website)],
+        "translations_dir": str(website),
+        "peek_language": False,
+    }
+    sources = {catalog_id(path): path.name for path in _english(config)}
+    assert sources["public-choice"] == "03b_public_choice_primer.pdf"
+    assert "christian-theology-of-public-policy" in sources
+    pairs = discover_pairs(config)
+    assert [(pair.book_id, pair.language) for pair in pairs] == [("public-choice", "af")]
+    assert pairs[0].translated.name == af.name
+
+
+def test_kdp_austrian_primer_is_not_modern_themes(tmp_path):
+    writing = tmp_path / "Writing"
+    writing.mkdir()
+    (writing / "A Primer on Modern Themes in Free Market Economics and Policy.pdf").write_bytes(b"%PDF")
+    website = tmp_path / "website"
+    website.mkdir()
+    (website / "03_austrian_economics_primer.pdf").write_bytes(b"%PDF")
+    es = website / "Austrian_Economics_A_Primer_ES_2026_ebook.pdf"
+    es.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(writing), str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].book_id == "austrian-economics"
+    assert pairs[0].language == "es"
+
+
+def test_surviving_chilean_justice_is_not_life_in_chile(tmp_path):
+    writing = tmp_path / "Writing"
+    writing.mkdir()
+    (writing / "Life in Chile.pdf").write_bytes(b"%PDF")
+    website = tmp_path / "website"
+    website.mkdir()
+    (website / "05_surviving_chilean_justice.pdf").write_bytes(b"%PDF")
+    es = website / "05_surviving_chilean_justice_es.pdf"
+    es.write_bytes(b"%PDF")
+    sources = select_english_sources(
+        {"english_dirs": [str(writing), str(website)], "translations_dir": str(website)}
+    )
+    ids = {infer_book_id(path) for path in sources}
+    assert "life-in-chile" in ids
+    assert "surviving-chilean-justice" in ids
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(writing), str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert [(pair.book_id, pair.language) for pair in pairs] == [("surviving-chilean-justice", "es")]
+
+
+def test_numbered_ai_finance_pairs_with_website_english(tmp_path):
+    website = tmp_path / "website"
+    website.mkdir()
+    (website / "01_ai_augmented_personal_finance.pdf").write_bytes(b"%PDF")
+    es = website / "01_ai_augmented_personal_finance_es.pdf"
+    es.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].book_id == "ai-augmented-personal-finance"
+    assert pairs[0].language == "es"
+    assert pairs[0].english.name.startswith("01_")
+
+
+def test_stf_short_code_pairs_sentenced_to_the_future(tmp_path):
+    website = tmp_path / "website"
+    epub = website / "EPUB"
+    epub.mkdir(parents=True)
+    (website / "Sentenced_to_the_Future_paperback_979-8-90593-987-7.pdf").write_bytes(b"%PDF")
+    es = epub / "STF_es.pdf"
+    es.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].book_id == "sentenced-to-the-future"
+    assert pairs[0].language == "es"
+
+
+def test_padeciendo_in_english_folder_is_still_a_translation(tmp_path):
+    folder = tmp_path / "SUFFERING UNJUSTLY"
+    folder.mkdir()
+    english = folder / "Suffering Unjustly (2026).pdf"
+    english.write_bytes(b"%PDF")
+    translated = folder / "Padeciendo Injustamente (2026).pdf"
+    translated.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_sources": [str(english)],
+            "reference_translations": [str(translated)],
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].book_id == "suffering-unjustly"
+    assert infer_language(translated) != "en"
+
+
+def test_writing_junk_is_not_an_english_source(tmp_path):
+    writing = tmp_path / "Writing"
+    logs = writing / "Olders docs re kids" / "EA Games" / "The Sims 2" / "Logs"
+    logs.mkdir(parents=True)
+    (logs / "ObjectError_F001_t104404.txt").write_text("error", encoding="utf-8")
+    (writing / "Harry Potter and the Sorcerer_s Stone.pdf").write_bytes(b"%PDF")
+    (writing / "Austrian Economics.pdf").write_bytes(b"%PDF")
+    sources = select_english_sources({"english_dirs": [str(writing)]})
+    assert [path.name for path in sources] == ["Austrian Economics.pdf"]
+
+
+def test_zh_hk_maps_to_traditional_chinese():
+    assert infer_language(Path("Austrian_Economics_A_Primer_ZH-HK_2026_ebook.pdf")) == "zh-tw"
+
+
+def test_prolife_english_pdf_is_not_a_translation(tmp_path):
+    website = tmp_path / "website"
+    website.mkdir()
+    english = website / "prolife_policy.pdf"
+    english.write_bytes(b"%PDF")
+    es = website / "prolife_policy_es.pdf"
+    es.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert [(pair.book_id, pair.language) for pair in pairs] == [("pro-life-policy", "es")]
+    leftover = unmatched_translations(
+        {
+            "english_dirs": [str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert any(path.name == "prolife_policy.pdf" for path, _reason in leftover)

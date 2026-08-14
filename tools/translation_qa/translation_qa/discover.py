@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
-from difflib import SequenceMatcher
 from pathlib import Path
 
-from translation_qa.catalog import BOOKS, BOOKS_BY_ID, SHORT_CODES
+from translation_qa.catalog import BOOKS, BOOKS_BY_ID, NUMBERED_STEMS, SHORT_CODES
 from translation_qa.extract import extract_sample, header_kind, looks_like_pdf
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
 from translation_qa.textnorm import fold, isbn_digits
@@ -18,13 +18,35 @@ _SKIP_NAME_MARKERS = (
     "biodup",
     "draft-discard",
     "not for sale",
+    "dustjacket",
+    "nohyph",
+    "silence_log",
+    "objecterror",
+)
+
+_SKIP_PATH_MARKERS = (
+    "_freedom_data",
+    "_nohyph",
+    "audiobooks",
+    "cell phone saves",
+    "backup_pre_kdp",
+    "ea games",
+    "the sims 2",
+    "the sims",
+    "docs 1990s",
+    "olders docs",
+    "agent_workflows",
+    "literary agent",
+    "indexing use",
 )
 
 _ENGLISH_MARKERS = (
     "english",
     "(en)",
     "_en.",
+    "_en_",
     "-en.",
+    "-en-",
     " complete",
     "(complete)",
     "interior",
@@ -54,15 +76,13 @@ def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool
         name_fold = fold(name)
         if name_fold and len(name_fold) >= 5 and re.search(rf"\b{re.escape(name_fold)}\b", folded):
             return code
-    for part in _language_tag_parts(path):
-        if part in {"zh-cn", "zh_cn", "cn"}:
-            return "zh"
-        if part in {"zh-tw", "zh_tw", "tw"}:
-            return "zh-tw"
-        if part in {"pt-br", "pt_br", "br"}:
-            return "pt-br"
-        if part in LANGUAGE_NAMES and part != "en":
-            return part
+    codes = [_normalize_lang_part(part) for part in _language_tag_parts(path)]
+    codes = [code for code in codes if code]
+    non_en = [code for code in codes if code != "en"]
+    if non_en:
+        return non_en[0]
+    if "en" in codes:
+        return "en"
     if _looks_english(path):
         return "en"
     if peek:
@@ -76,17 +96,33 @@ def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool
     return "und"
 
 
+def _normalize_lang_part(part: str) -> str | None:
+    part = part.lower().replace("_", "-")
+    if part in {"zh-cn", "cn"}:
+        return "zh"
+    if part in {"zh-tw", "tw", "zh-hk", "hk"}:
+        return "zh-tw"
+    if part in {"pt-br", "br"}:
+        return "pt-br"
+    if part in LANGUAGE_NAMES:
+        return part
+    return None
+
+
 def _language_tag_parts(path: Path) -> list[str]:
     """ISO codes only count as language tags, not as words like Spanish 'de'."""
     tagged: list[str] = []
     blob = path.name.lower()
+    for compound in ("zh-hk", "zh_hk", "zh-cn", "zh_cn", "zh-tw", "zh_tw", "pt-br", "pt_br"):
+        if compound in blob:
+            tagged.append(compound)
     tagged.extend(re.findall(r"(?:^|[_\-.])([a-z]{2,3})(?=[_\-.]|\.[a-z]{3,4}$)", blob))
     tagged.extend(re.findall(r"\(([a-z]{2,3})\)", blob))
     for parent in path.parents:
         name = parent.name.lower().strip()
         if re.fullmatch(r"[a-z]{2,3}", name) or name in LANGUAGE_NAMES or name in NAME_TO_CODE:
             tagged.append(NAME_TO_CODE.get(name, name))
-        if name in {"zh-cn", "zh_cn", "zh-tw", "zh_tw", "pt-br", "pt_br"}:
+        if name in {"zh-cn", "zh_cn", "zh-tw", "zh_tw", "zh-hk", "zh_hk", "pt-br", "pt_br"}:
             tagged.append(name)
     return tagged
 
@@ -104,8 +140,13 @@ def infer_book_id(path: Path) -> str:
 
 
 def catalog_book_id(path: Path) -> str | None:
-    haystack = fold(" ".join(_path_tokens(path)))
-    digits = isbn_digits(" ".join(_path_tokens(path)))
+    stem = path.stem.lower()
+    for prefix, book_id in NUMBERED_STEMS:
+        if re.match(rf"^{re.escape(prefix)}[_ \-]", stem):
+            return book_id
+
+    haystack = fold(f"{path.stem} {path.parent.name}")
+    digits = isbn_digits(f"{path.stem} {path.name}")
     for book in BOOKS:
         for isbn in book.isbns:
             if isbn and isbn in digits:
@@ -121,7 +162,7 @@ def catalog_book_id(path: Path) -> str | None:
                 continue
             if alias_fold == haystack or f" {alias_fold} " in f" {haystack} ":
                 score = max(score, 80 + len(alias_fold))
-            elif alias_fold in haystack and len(alias_fold) >= 10:
+            elif alias_fold in haystack and len(alias_fold) >= 12:
                 score = max(score, 50 + len(alias_fold))
         if score > best_score:
             best_id = book.id
@@ -143,41 +184,49 @@ def collect_pdfs(folders: list[Path]) -> list[Path]:
     for folder in folders:
         if not folder.is_dir():
             continue
-        for path in sorted(folder.rglob("*")):
-            if path.suffix.lower() not in {".pdf", ".txt"}:
+        for root, dirnames, filenames in os.walk(folder):
+            dirnames[:] = [name for name in dirnames if not _skip_path(Path(root) / name)]
+            if _skip_path(Path(root)):
+                dirnames[:] = []
                 continue
-            key = str(path).lower()
-            if key in seen:
-                continue
-            seen.add(key)
-            files.append(path)
+            for name in filenames:
+                path = Path(root) / name
+                if path.suffix.lower() not in {".pdf", ".txt"}:
+                    continue
+                if _skip_path(path):
+                    continue
+                key = str(path).lower()
+                if key in seen:
+                    continue
+                seen.add(key)
+                files.append(path)
     return files
 
 
 def select_english_sources(config: dict) -> list[Path]:
     explicit = [Path(item) for item in config.get("english_sources", []) if item]
-    folders = [Path(item) for item in config.get("english_dirs", []) if item]
+    folders = _config_folders(config, "english_dirs", "translations_dirs", "translations_dir")
     found = [path for path in collect_pdfs(folders) if not _should_skip(path)]
     ranked: dict[str, Path] = {}
     for path in found:
+        book_id = catalog_book_id(path)
+        if not book_id:
+            continue
+        if _has_non_english_language_tag(path) and not _looks_english(path):
+            continue
         language = infer_language(path)
         if language not in {"en", "und"}:
-            continue
-        if catalog_book_id(path) and language != "en" and not _looks_english(path):
-            continue
-        if _alias_book_id(path) and not _looks_english(path) and language != "en":
-            continue
-        book_id = infer_book_id(path)
-        if not book_id:
             continue
         current = ranked.get(book_id)
         if current is None or _english_rank(path) > _english_rank(current):
             ranked[book_id] = path
-    by_id = {infer_book_id(path): path for path in explicit if path}
-    by_id.update(ranked)
+    by_id = dict(ranked)
     for path in explicit:
-        if path:
-            by_id[infer_book_id(path)] = path
+        if not path:
+            continue
+        book_id = catalog_book_id(path) or infer_book_id(path)
+        if book_id:
+            by_id[book_id] = path
     return [path for path in by_id.values() if path]
 
 
@@ -185,75 +234,54 @@ def discover_pairs(
     config: dict, passwords: list[str] | None = None, peek: bool | None = None
 ) -> list[BookPair]:
     english_sources = select_english_sources(config)
-    english_by_id = {infer_book_id(path): path for path in english_sources if infer_book_id(path)}
+    english_by_id = {
+        (catalog_book_id(path) or infer_book_id(path)): path
+        for path in english_sources
+        if catalog_book_id(path) or infer_book_id(path)
+    }
     if peek is None:
         peek = bool(config.get("peek_language", False))
 
-    translation_folders = [Path(item) for item in config.get("translations_dirs", []) if item]
-    if config.get("translations_dir"):
-        translation_folders.append(Path(config["translations_dir"]))
-    extra = [Path(item) for item in config.get("reference_translations", []) if item]
-
-    candidates = list(extra)
-    candidates.extend(collect_pdfs(translation_folders))
+    candidates = list(_explicit_translations(config))
+    candidates.extend(collect_pdfs(_config_folders(config, "translations_dirs", "translations_dir")))
 
     pairs: list[BookPair] = []
     seen: set[tuple[str, str]] = set()
     for translated in candidates:
         try:
-            if _should_skip(translated):
+            pair = _pair_for_file(translated, english_by_id, passwords, peek)
+            if pair is None:
                 continue
-            language = infer_language(translated, passwords=passwords, peek=peek)
-            if language == "en":
-                continue
-            book_id = _match_book_id(translated, english_by_id)
-            if not book_id:
-                continue
-            english_path = english_by_id[book_id]
-            if _same_file(translated, english_path):
-                continue
-            if language == "und" and _looks_english(translated):
-                continue
-            key = (str(english_path.resolve()) if english_path.exists() else str(english_path), str(translated))
+            key = (
+                str(pair.english.resolve()) if pair.english.exists() else str(pair.english),
+                str(pair.translated),
+            )
             if key in seen:
                 continue
             seen.add(key)
-            pairs.append(
-                BookPair(
-                    english=english_path,
-                    translated=translated,
-                    language=language,
-                    book_id=book_id,
-                )
-            )
+            pairs.append(pair)
         except Exception as exc:
             print(f"  skip {translated}: {exc}", file=sys.stderr)
             continue
+    pairs = _prefer_ebook_pairs(pairs)
     pairs.sort(key=lambda item: (item.book_id, item.language, str(item.translated)))
     return pairs
 
 
 def translation_candidates(config: dict) -> list[Path]:
-    translation_folders = [Path(item) for item in config.get("translations_dirs", []) if item]
-    if config.get("translations_dir"):
-        translation_folders.append(Path(config["translations_dir"]))
-    extra = [Path(item) for item in config.get("reference_translations", []) if item]
-    files = list(extra)
-    files.extend(collect_pdfs(translation_folders))
+    files = list(_explicit_translations(config))
+    files.extend(collect_pdfs(_config_folders(config, "translations_dirs", "translations_dir")))
     return files
 
 
 def unmatched_translations(
     config: dict, passwords: list[str] | None = None, peek: bool | None = None
 ) -> list[tuple[Path, str]]:
-    english_by_id = {
-        infer_book_id(path): path
-        for path in select_english_sources(config)
-        if infer_book_id(path)
-    }
+    english_by_id = _english_by_id(config)
+    pairs = discover_pairs(config, passwords, peek=peek)
     paired = {
         pair.translated.resolve() if pair.translated.exists() else pair.translated
-        for pair in discover_pairs(config, passwords, peek=peek)
+        for pair in pairs
     }
     leftover: list[tuple[Path, str]] = []
     for path in translation_candidates(config):
@@ -263,7 +291,7 @@ def unmatched_translations(
             resolved = path
         if resolved in paired:
             continue
-        leftover.append((path, _skip_reason(path, english_by_id, passwords)))
+        leftover.append((path, _skip_reason(path, english_by_id, pairs, passwords)))
     return leftover
 
 
@@ -278,20 +306,17 @@ def inventory_rows(
         rows.append(
             {
                 "role": "english",
-                "book_id": infer_book_id(path),
+                "book_id": catalog_book_id(path) or infer_book_id(path),
                 "language": "en",
                 "path": str(path),
                 "note": "",
             }
         )
-    english_by_id = {
-        infer_book_id(path): path
-        for path in select_english_sources(config)
-        if infer_book_id(path)
-    }
+    english_by_id = _english_by_id(config)
+    pairs = discover_pairs(config, passwords, peek=peek)
     paired = {
         pair.translated.resolve() if pair.translated.exists() else pair.translated
-        for pair in discover_pairs(config, passwords, peek=peek)
+        for pair in pairs
     }
     for path in translation_candidates(config):
         try:
@@ -304,7 +329,7 @@ def inventory_rows(
             note = "paired"
             role = "translation"
         else:
-            note = _skip_reason(path, english_by_id, passwords)
+            note = _skip_reason(path, english_by_id, pairs, passwords)
             role = "unmatched"
         rows.append(
             {
@@ -318,14 +343,91 @@ def inventory_rows(
     return rows
 
 
-def _skip_reason(path: Path, english_by_id: dict[str, Path], passwords: list[str] | None = None) -> str:
+def _english_by_id(config: dict) -> dict[str, Path]:
+    return {
+        (catalog_book_id(path) or infer_book_id(path)): path
+        for path in select_english_sources(config)
+        if catalog_book_id(path) or infer_book_id(path)
+    }
+
+
+def _explicit_translations(config: dict) -> list[Path]:
+    return [Path(item) for item in config.get("reference_translations", []) if item]
+
+
+def _config_folders(config: dict, *keys: str) -> list[Path]:
+    folders: list[Path] = []
+    seen: set[str] = set()
+    for key in keys:
+        value = config.get(key)
+        items = value if isinstance(value, list) else [value] if value else []
+        for item in items:
+            path = Path(item)
+            marker = str(path).lower()
+            if marker in seen:
+                continue
+            seen.add(marker)
+            folders.append(path)
+    return folders
+
+
+def _pair_for_file(
+    translated: Path,
+    english_by_id: dict[str, Path],
+    passwords: list[str] | None,
+    peek: bool,
+) -> BookPair | None:
+    if _should_skip(translated):
+        return None
+    if not _is_translation_candidate(translated):
+        return None
+    language = infer_language(translated, passwords=passwords, peek=peek)
+    if language == "en":
+        return None
+    book_id = _match_book_id(translated, english_by_id)
+    if not book_id:
+        return None
+    english_path = english_by_id[book_id]
+    if _same_file(translated, english_path):
+        return None
+    return BookPair(
+        english=english_path,
+        translated=translated,
+        language=language,
+        book_id=book_id,
+    )
+
+
+def _is_translation_candidate(path: Path) -> bool:
+    if _has_non_english_language_tag(path):
+        return True
+    if _foreign_title_alias(path):
+        return True
+    return False
+
+
+def _skip_reason(
+    path: Path,
+    english_by_id: dict[str, Path],
+    pairs: list[BookPair],
+    passwords: list[str] | None = None,
+) -> str:
+    if _skip_path(path):
+        return "skipped junk folder"
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
         return f"not a PDF ({header_kind(path)} header)"
     if _should_skip(path):
         return "skipped DO-NOT-USE/BIODUP"
     language = infer_language(path, passwords=passwords, peek=bool(passwords is not None))
+    book_id = catalog_book_id(path)
+    if "paperback" in path.name.lower() and book_id:
+        for pair in pairs:
+            if pair.book_id == book_id and pair.language == language and "ebook" in pair.translated.name.lower():
+                return "skipped paperback; ebook exists for this language"
     if language == "en":
         return "looks like English, not a translation"
+    if not _is_translation_candidate(path):
+        return "English interior/filename without a language tag"
     if language == "und" and _looks_english(path):
         return "English interior/filename without a language tag"
     if not _match_book_id(path, english_by_id):
@@ -335,39 +437,9 @@ def _skip_reason(path: Path, english_by_id: dict[str, Path], passwords: list[str
 
 def _match_book_id(translated: Path, english_by_id: dict[str, Path]) -> str | None:
     catalog_id = catalog_book_id(translated)
-    if catalog_id:
-        resolved = _resolve_english_id(catalog_id, english_by_id)
-        if resolved:
-            return resolved
-
-    translated_id = infer_book_id(translated)
-    alias = _alias_book_id(translated)
-    if alias:
-        for book_id in english_by_id:
-            if alias in book_id or book_id in alias or fold(alias) in fold(book_id) or fold(book_id) in fold(alias):
-                return book_id
-    if translated_id in english_by_id:
-        return translated_id
-
-    haystack = fold(" ".join(_path_tokens(translated)))
-    best = None
-    best_score = 0.0
-    for book_id in english_by_id:
-        en_tokens = [token for token in fold(book_id).split() if len(token) > 3]
-        overlap = sum(1 for token in en_tokens if token in haystack)
-        ratio = SequenceMatcher(None, fold(book_id), fold(translated_id)).ratio() if translated_id else 0.0
-        score = overlap + ratio
-        distinctive = overlap >= 1 and any(len(token) >= 5 for token in en_tokens if token in haystack)
-        if distinctive and score > best_score:
-            best = book_id
-            best_score = score
-        elif overlap >= 2 and score > best_score:
-            best = book_id
-            best_score = score
-        elif ratio >= 0.62 and score > best_score:
-            best = book_id
-            best_score = score
-    return best
+    if not catalog_id:
+        return None
+    return _resolve_english_id(catalog_id, english_by_id)
 
 
 def _resolve_english_id(book_id: str, english_by_id: dict[str, Path]) -> str | None:
@@ -377,11 +449,9 @@ def _resolve_english_id(book_id: str, english_by_id: dict[str, Path]) -> str | N
     if book and book.fallback and book.fallback in english_by_id:
         return book.fallback
     if book and book.family:
-        for other_id, path in english_by_id.items():
+        for other_id in english_by_id:
             other = BOOKS_BY_ID.get(other_id)
             if other and other.family == book.family:
-                return other_id
-            if book.family in fold(other_id) or fold(book.title.split(" - ")[0]) in fold(str(path)):
                 return other_id
     return None
 
@@ -404,16 +474,14 @@ def _prefer_specific_btc(book_id: str | None, haystack: str) -> str | None:
     return book_id
 
 
-def _alias_book_id(path: Path) -> str | None:
-    haystack = fold(" ".join(_path_tokens(path)))
-    catalog_id = catalog_book_id(path)
-    if catalog_id:
-        book = BOOKS_BY_ID[catalog_id]
-        return fold(book.title)
-    for alias, book_id in sorted(SHORT_CODES.items(), key=lambda item: -len(item[0])):
-        if re.search(rf"\b{re.escape(alias)}\b", haystack):
-            return fold(BOOKS_BY_ID[book_id].title)
-    return None
+def _prefer_ebook_pairs(pairs: list[BookPair]) -> list[BookPair]:
+    best: dict[tuple[str, str], BookPair] = {}
+    for pair in pairs:
+        key = (pair.book_id, pair.language)
+        current = best.get(key)
+        if current is None or _translation_rank(pair.translated) > _translation_rank(current.translated):
+            best[key] = pair
+    return list(best.values())
 
 
 def _path_tokens(path: Path) -> list[str]:
@@ -422,8 +490,42 @@ def _path_tokens(path: Path) -> list[str]:
     return parts
 
 
+def _has_non_english_language_tag(path: Path) -> bool:
+    for part in _language_tag_parts(path):
+        mapped = _normalize_lang_part(part)
+        if mapped and mapped != "en":
+            return True
+    haystack = fold(f"{path.stem} {path.parent.name}")
+    raw = f"{path.stem} {path.parent.name}".lower()
+    for name, code in NAME_TO_CODE.items():
+        if code == "en" or len(name) < 4:
+            continue
+        if re.search(rf"\b{re.escape(name)}\b", raw):
+            return True
+        name_fold = fold(name)
+        if name_fold and len(name_fold) >= 5 and re.search(rf"\b{re.escape(name_fold)}\b", haystack):
+            return True
+    return False
+
+
+def _foreign_title_alias(path: Path) -> bool:
+    stem = fold(path.stem)
+    book_id = catalog_book_id(path)
+    if not book_id:
+        return False
+    book = BOOKS_BY_ID[book_id]
+    title_fold = fold(book.title)
+    for alias in book.aliases:
+        alias_fold = fold(alias)
+        if len(alias_fold) < 6:
+            continue
+        if alias_fold in stem and alias_fold not in title_fold:
+            return True
+    return False
+
+
 def _looks_english(path: Path) -> bool:
-    blob = f"{path.stem} {path.parent.name}".lower()
+    blob = path.stem.lower()
     if any(marker in blob for marker in _ENGLISH_MARKERS):
         return True
     tokens = set(re.findall(r"[a-z]+", blob))
@@ -445,17 +547,49 @@ def _looks_english(path: Path) -> bool:
 
 def _english_rank(path: Path) -> int:
     name = path.name.lower()
+    blob = str(path).lower().replace("\\", "/")
     score = 0
+    if re.search(r"(^|[_\-])en([_\-]|$)", name) or "_en_" in name:
+        score += 25
+    if "ebook" in name:
+        score += 20
+    if "kdp_by_isbn" in blob:
+        score += 15
+    if re.match(r"^\d{2}[a-z]?[_-]", name):
+        score += 12
     if "complete" in name:
-        score += 5
+        score += 8
     if "final" in name and "do-not-use" not in name:
         score += 4
     if "2026" in name:
         score += 2
+    if "paperback" in name:
+        score -= 18
     if "interior" in name:
-        score -= 1
-    if "v2" in name:
-        score -= 1
+        score -= 25
+    if "cell phone" in blob or "backup" in blob or "nohyph" in blob:
+        score -= 40
+    if path.suffix.lower() == ".txt":
+        score -= 30
+    if "dustjacket" in name or "postcard" in name:
+        score -= 50
+    return score
+
+
+def _translation_rank(path: Path) -> int:
+    name = path.name.lower()
+    blob = str(path).lower().replace("\\", "/")
+    score = 0
+    if "ebook" in name:
+        score += 20
+    if "kdp_by_isbn" in blob:
+        score += 15
+    if "paperback" in name:
+        score -= 18
+    if "cell phone" in blob or "backup" in blob or "nohyph" in blob:
+        score -= 40
+    if path.suffix.lower() == ".txt":
+        score -= 30
     return score
 
 
@@ -463,9 +597,16 @@ def _should_skip(path: Path) -> bool:
     name = path.name.lower()
     if any(marker in name for marker in _SKIP_NAME_MARKERS):
         return True
+    if _skip_path(path):
+        return True
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
         return True
     return False
+
+
+def _skip_path(path: Path) -> bool:
+    blob = str(path).lower().replace("\\", "/")
+    return any(marker in blob for marker in _SKIP_PATH_MARKERS)
 
 
 def _same_file(left: Path, right: Path) -> bool:

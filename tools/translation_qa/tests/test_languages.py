@@ -6,6 +6,14 @@ def test_store_languages_are_named():
         assert name in NAME_TO_CODE
 
 
+def test_zh_hk_is_traditional_chinese():
+    from pathlib import Path
+
+    from translation_qa.discover import infer_language
+
+    assert infer_language(Path("book_ZH-HK_ebook.pdf")) == "zh-tw"
+
+
 def test_detect_spanish_and_chinese_and_arabic():
     spanish = "El sufrimiento puede ser injusto. Los cristianos padecen por la justicia y por la cruz."
     assert detect_language_from_text(spanish) == "es"

@@ -18,9 +18,9 @@ cd tools\translation_qa
 .\rescan.bat
 ```
 
-`rescan.bat` archives the old three English-interior `und` reports (the ones named Behind the Walls INTERIOR / DO-NOT-USE), lists every PDF it can see, writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a new report, so you can stop and rerun.
+`rescan.bat` lists every catalog PDF it can see, writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a report, so you can stop and rerun.
 
-Do not keep counting those three old HTML files. `Get-Process python*, py*` returning nothing means the old scan is already finished; there is nothing to halt.
+If a scan is already printing the wrong book (for example Public Choice paired with Christian Theology of Public Policy), press Ctrl+C, `git pull` this branch, and run `.\rescan.bat` again.
 
 If you do not have the clone yet:
 
@@ -55,9 +55,9 @@ The 20 Alertness Books store titles, including the five *Bearing the Cross* volu
 - Pro-Life Policy
 - Life in Chile
 
-English PDFs are walked from `C:\Users\dinam\Documents\Writing`. Translations are walked from `C:\Alertness AI\website books`. Pairing uses ISBNs, catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), filename tags (`_es`, `(French)`), and a short text peek when the language is still unknown.
+English sources are the 20 catalog titles only. The checker looks for those English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books`. Pairing uses ISBNs, numbered stems (`01_` … `05_`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as “primer”, “chile”, or “public policy” across different catalog books.
 
-It skips `DO-NOT-USE` / `BIODUP` files and will not compare two English interiors of the same book.
+It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP files when an ebook for the same book and language exists. It will not compare two English interiors of the same book.
 
 ## Install
 
