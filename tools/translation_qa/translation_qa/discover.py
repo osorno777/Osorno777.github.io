@@ -66,13 +66,20 @@ def discover_pairs(config: dict) -> list[BookPair]:
         book_id = _match_book_id(translated, english_by_id)
         if not book_id:
             continue
-        key = (str(english_by_id[book_id]), str(translated))
+        english_path = english_by_id[book_id]
+        try:
+            same_file = translated.resolve() == english_path.resolve()
+        except OSError:
+            same_file = translated == english_path
+        if same_file:
+            continue
+        key = (str(english_path), str(translated))
         if key in seen:
             continue
         seen.add(key)
         pairs.append(
             BookPair(
-                english=english_by_id[book_id],
+                english=english_path,
                 translated=translated,
                 language=language,
                 book_id=book_id,

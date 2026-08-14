@@ -30,10 +30,14 @@ def main(argv: list[str] | None = None) -> int:
     scan.add_argument("--lang-filter", default="", help="Optional language code filter, e.g. es,de,fr.")
     _add_common(scan)
 
+    listing = sub.add_parser("list", help="Show which English/translation pairs the config would check.")
+    listing.add_argument("--config", required=True, type=Path)
+
     args = parser.parse_args(argv)
-    output_dir: Path = args.output
+    output_dir: Path = getattr(args, "output", Path("reports"))
     passwords = load_pdf_passwords()
-    if not passwords:
+
+    if args.command != "list" and not passwords:
         print(
             "No PDF_PASSWORDS set. Encrypted PDFs will fail. "
             "Copy .env.example to .env and add semicolon-separated passwords.",
@@ -61,6 +65,14 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(args.config)
         output_dir = Path(config.get("output_dir") or output_dir)
         pairs = discover_pairs(config)
+        if args.command == "list":
+            if not pairs:
+                print("No pairs found. Check english_sources, translations_dir, and filenames.")
+                return 2
+            print(f"Found {len(pairs)} pair(s):")
+            for pair in pairs:
+                print(f"  {pair.book_id} | {pair.language} | {pair.translated}")
+            return 0
         if args.book:
             needle = args.book.lower()
             pairs = [pair for pair in pairs if needle in pair.book_id or needle in pair.english.stem.lower()]
@@ -71,9 +83,10 @@ def main(argv: list[str] | None = None) -> int:
             print("No English/translation pairs found. Check paths in the config file.", file=sys.stderr)
             return 2
 
+        print(f"Found {len(pairs)} pair(s) to check.")
         worst = 0
-        for pair in pairs:
-            print(f"Checking {pair.book_id} -> {pair.language}: {pair.translated}")
+        for index, pair in enumerate(pairs, start=1):
+            print(f"[{index}/{len(pairs)}] Checking {pair.book_id} -> {pair.language}: {pair.translated}")
             result = audit_files(
                 pair.english,
                 pair.translated,
