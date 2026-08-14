@@ -13,6 +13,7 @@ from translation_qa.discover import (
     unmatched_translations,
 )
 from translation_qa.extract import ExtractionError
+from translation_qa.offload import drive_root, offload_work_to_drive
 from translation_qa.passwords import load_dotenv, load_pdf_passwords
 from translation_qa.pipeline import audit_files
 from translation_qa.report import DiskFullError, compact_existing_reports, write_reports
@@ -44,6 +45,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     compact.add_argument("--output", type=Path, default=Path("reports"))
 
+    offload = sub.add_parser(
+        "use-drive",
+        help="Move reports and Python junk off C: onto another drive and write reports there.",
+    )
+    offload.add_argument("--letter", default="E", help="Windows drive letter, e.g. E")
+    offload.add_argument("--root", type=Path, default=None, help="Override drive root (tests).")
+    offload.add_argument("--repo", type=Path, default=Path("."), help="tools/translation_qa folder")
+
     listing = sub.add_parser("list", help="Show which English/translation pairs the config would check.")
     listing.add_argument("--config", required=True, type=Path)
 
@@ -54,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     output_dir: Path = getattr(args, "output", Path("reports"))
     passwords = load_pdf_passwords()
 
-    if args.command not in {"list", "inventory", "compact-reports"} and not passwords:
+    if args.command not in {"list", "inventory", "compact-reports", "use-drive"} and not passwords:
         print(
             "No PDF_PASSWORDS set. Encrypted PDFs will fail. "
             "Copy .env.example to .env and add semicolon-separated passwords.",
@@ -89,6 +98,22 @@ def main(argv: list[str] | None = None) -> int:
                 f"Freed report disk space: deleted {stats['deleted_json']} JSON and "
                 f"{stats['deleted_csv']} CSV copies; shrunk {stats['shrunk_html']} oversized HTML file(s)."
             )
+            return 0
+
+        if args.command == "use-drive":
+            root = args.root if args.root is not None else drive_root(args.letter)
+            try:
+                result = offload_work_to_drive(
+                    root,
+                    args.repo.resolve(),
+                    require_root_exists=args.root is None,
+                )
+            except (FileNotFoundError, ValueError) as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
+            print(f"Reports: {result['reports']}")
+            print(f"Temp: {result['tmp']}")
+            print(f"Moved {result['moved']} file(s) off the repo drive.")
             return 0
 
         config = load_config(args.config)
@@ -260,8 +285,8 @@ def _disk_full_message(exc: DiskFullError) -> str:
     where = exc.path
     return (
         f"DISK FULL while writing {where}. "
-        "Free space on C: (empty Recycle Bin; delete reports\\*.json and reports\\*.csv), "
-        "then rerun .\\rescan.bat. HTML reports already written are kept and skipped on resume."
+        "Reports and temp files should be on E:\\translation_qa. "
+        "Rerun .\\rescan.bat; HTML reports already written are skipped on resume."
     )
 
 
