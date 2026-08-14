@@ -78,7 +78,7 @@ If that list is still small, open cPanel Terminal / SSH on the bookstore host an
 
 The checker looks for English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books` (PDF, TXT, and EPUB). Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
 
-It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP files when an ebook for the same book and language exists. It will not compare two English interiors of the same book.
+It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP PDFs when an ebook PDF for the same book and language exists. A KDP PDF and a store EPUB of the same language are **both scanned**; they can differ. It will not compare two English interiors of the same book.
 
 ## Install
 

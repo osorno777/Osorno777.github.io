@@ -310,7 +310,7 @@ def unmatched_translations(
 def inventory_rows(
     config: dict, passwords: list[str] | None = None, peek: bool | None = None
 ) -> list[dict[str, str]]:
-    """Describe every PDF the config can see, whether or not it paired."""
+    """Describe every book file the config can see, whether or not it paired."""
     if peek is None:
         peek = False
     rows: list[dict[str, str]] = []
@@ -320,6 +320,7 @@ def inventory_rows(
                 "role": "english",
                 "book_id": catalog_book_id(path) or infer_book_id(path),
                 "language": "en",
+                "format": _translation_format(path),
                 "path": str(path),
                 "note": "",
             }
@@ -348,6 +349,7 @@ def inventory_rows(
                 "role": role,
                 "book_id": book_id or "",
                 "language": language,
+                "format": _translation_format(path),
                 "path": str(path),
                 "note": note,
             }
@@ -437,9 +439,14 @@ def _skip_reason(
         return "skipped DO-NOT-USE/BIODUP"
     language = infer_language(path, passwords=passwords, peek=bool(passwords is not None))
     book_id = catalog_book_id(path)
-    if "paperback" in path.name.lower() and book_id:
+    if "paperback" in path.name.lower() and book_id and path.suffix.lower() == ".pdf":
         for pair in pairs:
-            if pair.book_id == book_id and pair.language == language and "ebook" in pair.translated.name.lower():
+            if (
+                pair.book_id == book_id
+                and pair.language == language
+                and _translation_format(pair.translated) == "pdf"
+                and "ebook" in pair.translated.name.lower()
+            ):
                 return "skipped paperback; ebook exists for this language"
     if language == "en":
         return "looks like English, not a translation"
@@ -450,9 +457,14 @@ def _skip_reason(
     if not _match_book_id(path, english_by_id):
         return "no matching English title"
     if book_id:
+        fmt = _translation_format(path)
         for pair in pairs:
-            if pair.book_id == book_id and pair.language == language:
-                return "duplicate; another file already paired for this language"
+            if (
+                pair.book_id == book_id
+                and pair.language == language
+                and _translation_format(pair.translated) == fmt
+            ):
+                return "duplicate; another file already paired for this language and format"
     return "already paired or same file"
 
 
@@ -496,13 +508,21 @@ def _prefer_specific_btc(book_id: str | None, haystack: str) -> str | None:
 
 
 def _prefer_ebook_pairs(pairs: list[BookPair]) -> list[BookPair]:
-    best: dict[tuple[str, str], BookPair] = {}
+    """Keep one file per book/language/format. PDF and EPUB can differ, so scan both."""
+    best: dict[tuple[str, str, str], BookPair] = {}
     for pair in pairs:
-        key = (pair.book_id, pair.language)
+        key = (pair.book_id, pair.language, _translation_format(pair.translated))
         current = best.get(key)
         if current is None or _translation_rank(pair.translated) > _translation_rank(current.translated):
             best[key] = pair
     return list(best.values())
+
+
+def _translation_format(path: Path) -> str:
+    suffix = path.suffix.lower().lstrip(".")
+    if suffix in {"epub", "pdf", "txt"}:
+        return suffix
+    return suffix or "other"
 
 
 def _local_haystack(path: Path) -> str:

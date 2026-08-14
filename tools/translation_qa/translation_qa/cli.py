@@ -109,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
                 skipped += 1
                 print(f"[{index}/{len(pairs)}] Resume skip {pair.book_id} -> {language}: {existing.name}")
                 continue
-            print(f"[{index}/{len(pairs)}] Checking {pair.book_id} -> {language}: {pair.translated}")
+            print(f"[{index}/{len(pairs)}] Checking {pair.book_id} -> {language} ({pair.translated.suffix.lower().lstrip('.') or 'file'}): {pair.translated}")
             try:
                 result = audit_files(
                     pair.english,
@@ -148,7 +148,8 @@ def _print_list(config: dict, pairs, output_dir: Path, passwords: list[str]) -> 
         lines.append(f"  EN {path}")
     lines.append(f"Translation pairs: {len(pairs)}")
     for pair in pairs:
-        lines.append(f"  {pair.book_id} | {pair.language} | {pair.translated}")
+        fmt = pair.translated.suffix.lower().lstrip(".") or "file"
+        lines.append(f"  {pair.book_id} | {pair.language} | {fmt} | {pair.translated}")
     lines.append(f"Unmatched translation files: {len(leftover)}")
     for path, reason in leftover[:80]:
         lines.append(f"  skip ({reason}): {path}")
@@ -171,9 +172,13 @@ def _print_list(config: dict, pairs, output_dir: Path, passwords: list[str]) -> 
 
 def _print_inventory(config: dict, output_dir: Path, passwords: list[str]) -> int:
     rows = inventory_rows(config, passwords=passwords)
-    lines = ["role\tbook_id\tlanguage\tnote\tpath"]
+    lines = ["role\tbook_id\tlanguage\tformat\tnote\tpath"]
     for row in rows:
-        lines.append("\t".join([row["role"], row["book_id"], row["language"], row["note"], row["path"]]))
+        lines.append(
+            "\t".join(
+                [row["role"], row["book_id"], row["language"], row.get("format", ""), row["note"], row["path"]]
+            )
+        )
     text = "\n".join(lines) + "\n"
     print(text, end="")
     path = output_dir / "inventory.tsv"
@@ -182,7 +187,9 @@ def _print_inventory(config: dict, output_dir: Path, passwords: list[str]) -> in
     print(
         f"Summary: {sum(1 for row in rows if row['role']=='english')} English, "
         f"{sum(1 for row in rows if row['role']=='translation')} paired, "
-        f"{sum(1 for row in rows if row['role']=='unmatched')} unmatched"
+        f"{sum(1 for row in rows if row['role']=='unmatched')} unmatched, "
+        f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='epub')} epub pairs, "
+        f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='pdf')} pdf pairs"
     )
     return 0
 

@@ -64,3 +64,30 @@ def test_discover_pairs_store_slug_epub(tmp_path: Path) -> None:
     assert [(pair.book_id, pair.language) for pair in pairs] == [
         ("new-institutional-economics", "es")
     ]
+
+
+def test_kdp_pdf_and_store_epub_are_both_scanned(tmp_path: Path) -> None:
+    english = tmp_path / "english"
+    website = tmp_path / "website"
+    kdp = website / "PDF" / "kdp_by_isbn"
+    store = website / "store_epubs"
+    english.mkdir()
+    kdp.mkdir(parents=True)
+    store.mkdir()
+    (english / "New Institutional Economics.pdf").write_bytes(b"%PDF")
+    pdf = kdp / "New_Institutional_Economics_A_Primer_ES_2026_ebook.pdf"
+    pdf.write_bytes(b"%PDF")
+    epub = store / "econ-nie_es.epub"
+    _write_epub(epub, "La nueva economia institucional.")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(english)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    got = {(pair.language, pair.translated.suffix.lower(), pair.translated.name) for pair in pairs}
+    assert got == {
+        ("es", ".pdf", pdf.name),
+        ("es", ".epub", epub.name),
+    }
