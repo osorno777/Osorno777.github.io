@@ -55,7 +55,9 @@ The 20 Alertness Books store titles, including the five *Bearing the Cross* volu
 - Pro-Life Policy
 - Life in Chile
 
-English sources are the 20 catalog titles only. The checker looks for those English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books`. Pairing uses ISBNs, numbered stems (`01_` through `05_`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
+English sources are the 20 catalog titles only. The Alertness Books store sells those 20 titles in **up to 40 languages** (not 20), including English. Not every book is translated into every language. The live store has about **537 non-English ebooks** plus 20 English ebooks (about 557 unique ebook ISBNs, the "about 550 products" figure) and about 67 audiobooks. Audiobooks are not scanned. The checker only pairs PDF/TXT files it can see under the configured folders; a 152-pair inventory means the other store translations are not in `website books` as language-tagged PDFs yet.
+
+The checker looks for those English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books`. Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
 
 It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP files when an ebook for the same book and language exists. It will not compare two English interiors of the same book.
 

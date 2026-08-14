@@ -63,3 +63,16 @@ def test_kdp_public_choice_filename():
         catalog_book_id(Path("Austrian_Economics_A_Primer_ES_2026_ebook.pdf"))
         == "austrian-economics"
     )
+
+
+def test_store_slugs_resolve():
+    assert catalog_book_id(Path("vintage_bg_de.pdf")) == "bible-and-government"
+    assert catalog_book_id(Path("vintage_bg_es.pdf")) == "bible-and-government"
+    assert catalog_book_id(Path("vintage_ctpp_fr.pdf")) == "christian-theology-of-public-policy"
+    assert catalog_book_id(Path("vintage_linc_es.pdf")) == "life-in-chile"
+    assert catalog_book_id(Path("vintage_prolife_it.pdf")) == "pro-life-policy"
+    assert catalog_book_id(Path("vintage_bldreg_pt.pdf")) == "building-regulation-allodial-policy"
+    assert catalog_book_id(Path("vintage_pp_es.pdf")) == "primer-on-modern-themes"
+    assert catalog_book_id(Path("econ-survivingcj_yo.pdf")) == "surviving-chilean-justice"
+    assert catalog_book_id(Path("econ-nie_am.pdf")) == "new-institutional-economics"
+    assert catalog_book_id(Path("btc-1_af.pdf")) == "bearing-the-cross-1"

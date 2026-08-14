@@ -558,3 +558,24 @@ def test_lecture_outline_loses_to_full_allodial_book(tmp_path):
     assert [path.name for path in sources] == [
         "Building Regulation Market Alternatives and Allodial Policy.pdf"
     ]
+
+
+def test_vintage_bg_pairs_with_bible_and_government(tmp_path):
+    ebooks = tmp_path / "ebooks"
+    website = tmp_path / "website"
+    ebooks.mkdir()
+    website.mkdir()
+    (ebooks / "Bible and Government - Public Policy from a Christian Perspective.pdf").write_bytes(b"%PDF")
+    (website / "vintage_bg_de.pdf").write_bytes(b"%PDF")
+    (website / "vintage_bg_es.pdf").write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(ebooks)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert {(pair.book_id, pair.language) for pair in pairs} == {
+        ("bible-and-government", "de"),
+        ("bible-and-government", "es"),
+    }

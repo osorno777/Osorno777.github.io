@@ -1,6 +1,13 @@
 """Canonical Alertness Books catalog used to pair English sources with translations.
 
-Titles and ISBNs are taken from the public store at alertnessai.com/AlertnessBooks.
+Titles, store slugs, and ISBNs are taken from https://alertnessbooks.com/store.php
+(also served at alertnessai.com/AlertnessBooks). The store lists 20 book titles
+in up to 40 languages, including English. Not every title is translated into
+every language. Audiobooks are separate products and are not scanned.
+
+Live store (2026-08-14): 20 English ebooks, about 537 non-English ebooks,
+and about 67 audiobooks. Unique ebook ISBNs are about 557, which matches the
+"about 550 products" bookstore figure when audiobooks are counted separately.
 """
 
 from __future__ import annotations
@@ -47,6 +54,8 @@ BOOKS: tuple[Book, ...] = (
             "defendiendo tu tesis",
             "tesis doctoral",
             "02 defending your phd",
+            "econ-phd",
+            "econ phd",
         ),
         isbns=("9798905935305", "9798906191076"),
     ),
@@ -61,6 +70,8 @@ BOOKS: tuple[Book, ...] = (
             "primer for the liberty-minded reader",
             "liberty-minded reader",
             "03 austrian economics",
+            "econ-austrian",
+            "econ austrian",
         ),
         isbns=("9798905935336", "9798905935350"),
     ),
@@ -90,6 +101,8 @@ BOOKS: tuple[Book, ...] = (
             "nueva economia institucional",
             "primer on the rules of the game",
             "04 new institutional",
+            "econ-nie",
+            "econ nie",
         ),
         isbns=("9798905935398", "9798906195579"),
     ),
@@ -102,6 +115,8 @@ BOOKS: tuple[Book, ...] = (
             "justicia chilena",
             "political persecution",
             "05 surviving chilean",
+            "econ-survivingcj",
+            "survivingcj",
         ),
         isbns=("9798905935428", "9798906195371"),
     ),
@@ -139,6 +154,7 @@ BOOKS: tuple[Book, ...] = (
             "bearing the cross book 1",
             "btc book one",
             "btc1",
+            "btc-1",
             "valparaiso part 1",
             "valparaiso (part 1)",
         ),
@@ -154,6 +170,7 @@ BOOKS: tuple[Book, ...] = (
             "bearing the cross book 2",
             "btc book two",
             "btc2",
+            "btc-2",
             "valparaiso part 2",
             "valparaiso (part 2)",
         ),
@@ -169,6 +186,7 @@ BOOKS: tuple[Book, ...] = (
             "bearing the cross book 3",
             "btc book three",
             "btc3",
+            "btc-3",
             "valparaiso part 3",
             "rancagua",
         ),
@@ -184,6 +202,7 @@ BOOKS: tuple[Book, ...] = (
             "bearing the cross book 4",
             "btc book four",
             "btc4",
+            "btc-4",
             "casablanca part 1",
             "casablanca (part 1)",
         ),
@@ -199,6 +218,7 @@ BOOKS: tuple[Book, ...] = (
             "bearing the cross book 5",
             "btc book five",
             "btc5",
+            "btc-5",
             "casablanca part 2",
             "casablanca (part 2)",
         ),
@@ -239,6 +259,8 @@ BOOKS: tuple[Book, ...] = (
             "bible and goverment",
             "biblia y gobierno",
             "public policy from a christian perspective",
+            "vintage_bg",
+            "vintage bg",
         ),
         isbns=("9798906193490", "9798906191212", "0972541802"),
     ),
@@ -250,6 +272,8 @@ BOOKS: tuple[Book, ...] = (
             "teologia cristiana de la politica publica",
             "highlighting the american experience",
             "ctpp",
+            "vintage_ctpp",
+            "vintage ctpp",
         ),
         isbns=("9798906194107", "9798906191090", "0972975497"),
     ),
@@ -260,6 +284,10 @@ BOOKS: tuple[Book, ...] = (
             "primer on modern themes",
             "modern themes in free market",
             "free market economics and policy",
+            "vintage_primer",
+            "vintage primer",
+            "vintage_pp",
+            "vintage pp",
         ),
         isbns=("9798906195388", "9798906191168", "9798906195562"),
     ),
@@ -270,6 +298,10 @@ BOOKS: tuple[Book, ...] = (
             "building regulation",
             "allodial policy",
             "market alternatives and allodial",
+            "vintage_breg",
+            "vintage breg",
+            "vintage_bldreg",
+            "vintage bldreg",
         ),
         isbns=("9798906194510", "9798906191182"),
     ),
@@ -282,6 +314,8 @@ BOOKS: tuple[Book, ...] = (
             "prolife policy",
             "politica pro vida",
             "liberty and human rights",
+            "vintage_prolife",
+            "vintage prolife",
         ),
         isbns=("9798905939778", "9798906195692"),
     ),
@@ -292,6 +326,8 @@ BOOKS: tuple[Book, ...] = (
             "life in chile",
             "vida en chile",
             "cautionary guide for newcomers",
+            "vintage_linc",
+            "vintage linc",
         ),
         isbns=("9798905939761", "9798905935329"),
     ),
