@@ -41,6 +41,12 @@ _SKIP_NAME_MARKERS = (
     "sidecar",
     "refusal_text",
     "fix_refusal",
+    "contaminated",
+    "stale-",
+    "hostbytes",
+    "punchlist",
+    "insertions",
+    "restored",
 )
 
 _BOOK_SUFFIXES = {".pdf", ".txt", ".epub", ".html", ".htm", ".xhtml"}
@@ -62,6 +68,8 @@ _SKIP_PATH_MARKERS = (
     "_pending_delete",
     "node_modules",
     "_staging",
+    "_safety",
+    "_bak",
 )
 
 _ENGLISH_MARKERS = (
@@ -83,7 +91,7 @@ _ENGLISH_MARKERS = (
 # not mid-title words such as life_in_chile or Sentenced_to_the_Future.
 _ISO_SLOT_RE = re.compile(
     r"(?:^|[_\-.])(zh[-_](?:cn|tw|hk)|pt[-_]br|[a-z]{2,3})"
-    r"(?=_2026|-2026|_ebook|_paperback|\.[a-z]{3,4}$|[()\s])",
+    r"(?=_2026|-2026|_ebook|_paperback|_final|_source|\.[a-z]{3,4}$|[()\s])",
     re.I,
 )
 
@@ -688,6 +696,10 @@ def _translation_rank(path: Path) -> int:
         score += 30
     elif "fulfillment/_out" in blob:
         score += 20
+    if "hostbytes" in name or "stale" in name or "contaminated" in name:
+        score -= 50
+    if name.count(".") > 1:
+        score -= 8
     return score
 
 
@@ -718,6 +730,8 @@ def _skip_path(path: Path) -> bool:
                 return True
             continue
         if marker in parts:
+            return True
+        if marker == "_bak" and any(part.endswith("_bak") for part in parts):
             return True
     return False
 

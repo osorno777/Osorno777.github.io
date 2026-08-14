@@ -32,7 +32,7 @@ foreach ($root in $roots) {
             $isLiveCatalog = $_.Name -ieq "store_catalog.json"
             $ext -in @(".epub", ".pdf", ".txt", ".html", ".htm", ".xhtml", ".json") -and (
                 $ext -eq ".epub" -or $isPrivate -or $isRebuild -or $isLiveCatalog -or $_.Name -match $slugPattern
-            ) -and ($_.Name -notmatch '(?i)sidecar|refusal_text') -and ($rel -notlike "*\_staging\*")
+            ) -and ($_.Name -notmatch '(?i)sidecar|refusal_text|contaminated|stale-|hostbytes|punchlist|insertions') -and ($rel -notlike "*\_staging\*") -and ($rel -notlike "*\_safety\*") -and ($rel -notlike "*_bak\*")
         } |
         ForEach-Object {
             $ext = $_.Extension.ToLower()
@@ -56,6 +56,6 @@ Write-Host ("Unique rows: {0}" -f ($unique.Count - 1))
 $unique | Select-Object -First 50
 if ($unique.Count -gt 51) { Write-Host "... (see the TSV for the rest)" }
 Write-Host ""
-Write-Host "If this list is still small, copy store EPUBs from server /data/. HTML rebuilds may"
-Write-Host "already be at C:\Alertness AI\bookstore\fulfillment\_out (for example btc-5_hi.html)."
-Write-Host "Do not copy sidecar JSON; its text field is contamination, not the original English."
+Write-Host "3518-row runs are expected. CONTAMINATED / STALE / _bak / _safety backups are not live."
+Write-Host "Next: git pull, then this fast hunt (do not re-walk all of C:\Alertness AI):"
+Write-Host "  Get-ChildItem C:\Alertness AI\bookstore -Recurse -Filter store_catalog.json -EA SilentlyContinue | Select-Object -Expand FullName"
