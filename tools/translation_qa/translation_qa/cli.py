@@ -4,7 +4,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from translation_qa.discover import discover_pairs, infer_language, load_config
+from translation_qa.discover import (
+    discover_pairs,
+    infer_language,
+    load_config,
+    select_english_sources,
+    unmatched_translations,
+)
 from translation_qa.extract import ExtractionError
 from translation_qa.passwords import load_dotenv, load_pdf_passwords
 from translation_qa.pipeline import audit_files
@@ -66,13 +72,25 @@ def main(argv: list[str] | None = None) -> int:
         output_dir = Path(config.get("output_dir") or output_dir)
         pairs = discover_pairs(config)
         if args.command == "list":
-            english_count = len({pair.book_id for pair in pairs})
-            if not pairs:
-                print("No pairs found. Check english_dirs, translations_dir, and filenames.")
-                return 2
-            print(f"Found {len(pairs)} pair(s) across {english_count} English book(s):")
+            english_sources = select_english_sources(config)
+            leftover = unmatched_translations(config)
+            print(f"English books found: {len(english_sources)}")
+            for path in sorted(english_sources, key=lambda item: item.name.lower()):
+                print(f"  EN {path}")
+            print(f"Translation pairs: {len(pairs)}")
             for pair in pairs:
                 print(f"  {pair.book_id} | {pair.language} | {pair.translated}")
+            print(f"Unmatched translation files: {len(leftover)}")
+            for path, reason in leftover[:80]:
+                print(f"  skip ({reason}): {path}")
+            if len(leftover) > 80:
+                print(f"  ... {len(leftover) - 80} more")
+            if not english_sources:
+                print("No English PDFs found. Check english_dirs in paths.json.")
+                return 2
+            if not pairs:
+                print("No translation pairs. Language must appear in the filename or folder (_es, Spanish, es/).")
+                return 2
             return 0
         if args.book:
             needle = args.book.lower()

@@ -1,7 +1,31 @@
 from pathlib import Path
 
 from translation_qa.cli import main
-from translation_qa.discover import discover_pairs, infer_book_id, infer_language, select_english_sources
+from translation_qa.discover import (
+    discover_pairs,
+    infer_book_id,
+    infer_language,
+    select_english_sources,
+    unmatched_translations,
+)
+
+
+def test_unmatched_lists_english_interiors(tmp_path):
+    english = tmp_path / "Behind the Walls (2026).pdf"
+    english.write_bytes(b"%PDF")
+    translations = tmp_path / "website"
+    translations.mkdir()
+    junk = translations / "Behind the Walls INTERIOR BIODUP-DO-NOT-USE.pdf"
+    junk.write_bytes(b"%PDF")
+    leftover = unmatched_translations(
+        {
+            "english_sources": [str(english)],
+            "translations_dir": str(translations),
+        }
+    )
+    assert leftover
+    assert "DO-NOT-USE" in leftover[0][1] or "English" in leftover[0][1]
+
 
 
 def test_infer_language_from_filename():
@@ -91,4 +115,5 @@ def test_list_command_prints_pair_count(tmp_path, capsys):
     )
     assert main(["list", "--config", str(config_path)]) == 0
     output = capsys.readouterr().out
-    assert "Found 1 pair" in output
+    assert "Translation pairs: 1" in output
+    assert "es" in output

@@ -174,6 +174,49 @@ def discover_pairs(config: dict) -> list[BookPair]:
     return pairs
 
 
+def translation_candidates(config: dict) -> list[Path]:
+    translation_folders = [Path(item) for item in config.get("translations_dirs", []) if item]
+    if config.get("translations_dir"):
+        translation_folders.append(Path(config["translations_dir"]))
+    extra = [Path(item) for item in config.get("reference_translations", []) if item]
+    files = list(extra)
+    files.extend(collect_pdfs(translation_folders))
+    return files
+
+
+def unmatched_translations(config: dict) -> list[tuple[Path, str]]:
+    english_by_id = {
+        infer_book_id(path): path
+        for path in select_english_sources(config)
+        if infer_book_id(path)
+    }
+    paired = {pair.translated.resolve() if pair.translated.exists() else pair.translated for pair in discover_pairs(config)}
+    leftover: list[tuple[Path, str]] = []
+    for path in translation_candidates(config):
+        try:
+            resolved = path.resolve()
+        except OSError:
+            resolved = path
+        if resolved in paired:
+            continue
+        leftover.append((path, _skip_reason(path, english_by_id)))
+    return leftover
+
+
+def _skip_reason(path: Path, english_by_id: dict[str, Path]) -> str:
+    if _should_skip(path):
+        return "skipped DO-NOT-USE/BIODUP"
+    language = infer_language(path)
+    if language == "en":
+        return "looks like English, not a translation"
+    if language == "und" and _looks_english(path):
+        return "English interior/filename without a language tag"
+    if not _match_book_id(path, english_by_id):
+        return "no matching English title"
+    return "already paired or same file"
+
+
+
 def _match_book_id(translated: Path, english_by_id: dict[str, Path]) -> str | None:
     translated_id = infer_book_id(translated)
     alias = _alias_book_id(translated)
