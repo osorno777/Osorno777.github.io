@@ -70,6 +70,7 @@ _SKIP_PATH_MARKERS = (
     "_staging",
     "_safety",
     "_bak",
+    "stale_samples",
 )
 
 _ENGLISH_MARKERS = (
@@ -733,7 +734,7 @@ def _skip_path(path: Path) -> bool:
             return True
         if marker == "_bak" and any(part.endswith("_bak") for part in parts):
             return True
-        if any(part.startswith("_live_") for part in parts):
+        if any(part.startswith("_live_") or part.startswith("stale") for part in parts):
             return True
     return False
 

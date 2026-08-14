@@ -155,6 +155,25 @@ def test_contaminated_bak_and_stale_are_skipped(tmp_path):
     assert not any("STALE" in name for name in names)
 
 
+def test_stale_samples_folder_is_skipped(tmp_path):
+    english = tmp_path / "english"
+    out = tmp_path / "bookstore" / "fulfillment" / "_out"
+    stale = out / "stale_samples"
+    english.mkdir()
+    stale.mkdir(parents=True)
+    (english / "AI-Augmented Personal Finance.pdf").write_bytes(b"%PDF")
+    (out / "econ-aifinance_pt.html").write_text("<html><body><p>live pt</p></body></html>", encoding="utf-8")
+    (stale / "econ-aifinance_pt.html").write_text("<html><body><p>stale pt</p></body></html>", encoding="utf-8")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(english)],
+            "translations_dir": str(tmp_path / "bookstore"),
+            "peek_language": False,
+        }
+    )
+    assert [pair.translated.parent.name for pair in pairs] == ["_out"]
+
+
 def test_agter_die_mure_is_behind_the_walls_afrikaans():
     path = Path("Agter_die_Mure_AF_2026_ebook_9798905930027.epub")
     assert catalog_book_id(path) == "behind-the-walls"
