@@ -28,8 +28,9 @@ foreach ($root in $roots) {
             $ext = $_.Extension.ToLower()
             $rel = $_.FullName.ToLower()
             $isPrivate = $rel -like "*\admin\translations\private\*"
+            $isRebuild = $rel -like "*\fulfillment\_out\*"
             $ext -in @(".epub", ".pdf", ".txt", ".html", ".htm", ".xhtml") -and (
-                $ext -eq ".epub" -or $isPrivate -or $_.Name -match $slugPattern
+                $ext -eq ".epub" -or $isPrivate -or $isRebuild -or $_.Name -match $slugPattern
             ) -and ($_.Name -notmatch '(?i)sidecar|refusal_text')
         } |
         ForEach-Object {
@@ -37,6 +38,7 @@ foreach ($root in $roots) {
             $kind = if ($_.FullName.ToLower() -like "*\admin\translations\private\*") {
                     if ($ext -in @(".html", ".htm", ".xhtml")) { "private-html" } else { "private" }
                 }
+                elseif ($_.FullName.ToLower() -like "*\fulfillment\_out\*") { "rebuild-html" }
                 elseif ($ext -eq ".epub") { "epub" }
                 elseif ($ext -in @(".html", ".htm", ".xhtml")) { "html" }
                 else { "slug" }
@@ -52,6 +54,6 @@ Write-Host ("Unique rows: {0}" -f ($unique.Count - 1))
 $unique | Select-Object -First 50
 if ($unique.Count -gt 51) { Write-Host "... (see the TSV for the rest)" }
 Write-Host ""
-Write-Host "If this list is still small, copy store EPUBs from server /data/ and HTML masters from"
-Write-Host "admin/translations/private/ (see README). Do not copy sidecar JSON; its text field is"
-Write-Host "contamination, not the original English."
+Write-Host "If this list is still small, copy store EPUBs from server /data/. HTML rebuilds may"
+Write-Host "already be at C:\Alertness AI\bookstore\fulfillment\_out (for example btc-5_hi.html)."
+Write-Host "Do not copy sidecar JSON; its text field is contamination, not the original English."

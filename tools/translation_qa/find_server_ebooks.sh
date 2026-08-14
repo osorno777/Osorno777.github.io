@@ -45,7 +45,14 @@ else
   find "$FOUND" -type d -path '*/admin/translations/private' 2>/dev/null | head -5
 fi
 echo
-echo "Bookstore relay / pipeline files (list only; do not edit):"
+echo "Fulfillment HTML rebuilds (fulfillment/_out):"
+if [ -d "$FOUND/fulfillment/_out" ]; then
+  find "$FOUND/fulfillment/_out" \( -iname '*.html' -o -iname '*.htm' -o -iname '*.xhtml' \) 2>/dev/null | wc -l
+  find "$FOUND/fulfillment/_out" \( -iname '*.html' -o -iname '*.htm' -o -iname '*.xhtml' \) 2>/dev/null | head -20
+else
+  echo "  not present at $FOUND/fulfillment/_out"
+fi
+echo
 find "$FOUND" \( -iname 'WORKORDERS_RELAY*.md' -o -iname 'LIC_EN_metadata.md' -o -iname 'translate_html.py' -o -iname 'fix_refusal_text.py' \) 2>/dev/null | head -20
 echo
 echo "First 40 EPUB/PDF paths:"

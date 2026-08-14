@@ -51,6 +51,8 @@ _SKIP_PATH_MARKERS = (
     "agent_workflows",
     "literary agent",
     "indexing use",
+    "_pending_delete",
+    "node_modules",
 )
 
 _ENGLISH_MARKERS = (
@@ -622,7 +624,7 @@ def _english_rank(path: Path) -> int:
         score -= 30
     if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
         score += 6
-    if "translations/private" in blob:
+    if "translations/private" in blob or "fulfillment/_out" in blob:
         score += 10
     if "dustjacket" in name or "postcard" in name:
         score -= 50
@@ -649,7 +651,7 @@ def _translation_rank(path: Path) -> int:
         score -= 30
     if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
         score += 18
-    if "translations/private" in blob:
+    if "translations/private" in blob or "fulfillment/_out" in blob:
         score += 20
     return score
 
