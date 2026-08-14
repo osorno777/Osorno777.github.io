@@ -107,13 +107,120 @@ def test_list_command_prints_pair_count(tmp_path, capsys):
     translated = tmp_path / "Suffering Unjustly Spanish.pdf"
     english.write_bytes(b"%PDF")
     translated.write_bytes(b"%PDF")
+    reports = tmp_path / "reports"
     config_path = tmp_path / "paths.json"
     config_path.write_text(
-        '{"english_sources": ["%s"], "translations_dir": "%s"}'
-        % (str(english).replace("\\", "/"), str(tmp_path).replace("\\", "/")),
+        '{"english_sources": ["%s"], "translations_dir": "%s", "output_dir": "%s"}'
+        % (
+            str(english).replace("\\", "/"),
+            str(tmp_path).replace("\\", "/"),
+            str(reports).replace("\\", "/"),
+        ),
         encoding="utf-8",
     )
     assert main(["list", "--config", str(config_path)]) == 0
     output = capsys.readouterr().out
     assert "Translation pairs: 1" in output
     assert "es" in output
+    assert (reports / "list.txt").is_file()
+
+
+def test_spanish_de_is_not_german():
+    assert infer_language(Path("Detrás de los Muros.pdf")) == "und"
+    assert infer_language(Path("Detrás de los Muros (Spanish).pdf")) == "es"
+    assert infer_book_id(Path("Detrás de los Muros.pdf")) == "behind-the-walls"
+
+
+def test_isbn_maps_to_catalog_book():
+    assert infer_book_id(Path("interior_9798905930942_es.pdf")) == "behind-the-walls"
+    assert infer_language(Path("interior_9798905930942_es.pdf")) == "es"
+
+
+def test_store_language_folder(tmp_path):
+    english = tmp_path / "Austrian Economics.pdf"
+    english.write_bytes(b"%PDF")
+    folder = tmp_path / "website" / "Amharic"
+    folder.mkdir(parents=True)
+    translated = folder / "Austrian Economics.pdf"
+    translated.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_sources": [str(english)],
+            "translations_dir": str(tmp_path / "website"),
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].language == "am"
+
+
+def test_btc_part_falls_back_to_complete_english(tmp_path):
+    english = tmp_path / "Bearing the Cross (complete).pdf"
+    english.write_bytes(b"%PDF")
+    translated = tmp_path / "Bearing the Cross BOOK THREE Rancagua (Spanish).pdf"
+    translated.write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_sources": [str(english)],
+            "reference_translations": [str(translated)],
+            "peek_language": False,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].language == "es"
+    assert pairs[0].english.name.startswith("Bearing")
+
+
+def test_austrian_primer_is_not_modern_themes_primer():
+    assert infer_book_id(Path("Austrian Economics A Primer.pdf")) == "austrian-economics"
+    assert infer_book_id(Path("A Primer on Modern Themes in Free Market Economics and Policy.pdf")) == (
+        "primer-on-modern-themes"
+    )
+
+
+def test_list_returns_zero_when_no_pairs(tmp_path, capsys):
+    english = tmp_path / "Life in Chile.pdf"
+    english.write_bytes(b"%PDF")
+    translations = tmp_path / "empty"
+    translations.mkdir()
+    reports = tmp_path / "reports"
+    config_path = tmp_path / "paths.json"
+    config_path.write_text(
+        '{"english_sources": ["%s"], "translations_dir": "%s", "output_dir": "%s"}'
+        % (
+            str(english).replace("\\", "/"),
+            str(translations).replace("\\", "/"),
+            str(reports).replace("\\", "/"),
+        ),
+        encoding="utf-8",
+    )
+    assert main(["list", "--config", str(config_path)]) == 0
+    assert "Translation pairs: 0" in capsys.readouterr().out
+
+
+def test_scan_resumes_existing_report(tmp_path, capsys):
+    english = tmp_path / "Suffering Unjustly.txt"
+    translated = tmp_path / "Suffering Unjustly Spanish.txt"
+    english.write_text("Christ suffered unjustly in 33. See John 19:16.", encoding="utf-8")
+    translated.write_text("Cristo padecio injustamente en 33. Ver Juan 19:16.", encoding="utf-8")
+    reports = tmp_path / "reports"
+    config_path = tmp_path / "paths.json"
+    config_path.write_text(
+        '{"english_sources": ["%s"], "translations_dir": "%s", "output_dir": "%s", "peek_language": false}'
+        % (
+            str(english).replace("\\", "/"),
+            str(tmp_path).replace("\\", "/"),
+            str(reports).replace("\\", "/"),
+        ),
+        encoding="utf-8",
+    )
+    assert main(["scan", "--config", str(config_path)]) in {0, 1}
+    html_files = list(reports.glob("*.html"))
+    assert html_files
+    first = html_files[0].read_text(encoding="utf-8")
+    html_files[0].write_text(first + "\n<!-- marker -->\n", encoding="utf-8")
+    capsys.readouterr()
+    assert main(["scan", "--config", str(config_path)]) in {0, 1}
+    output = capsys.readouterr().out
+    assert "Resume skip" in output
+    assert "<!-- marker -->" in html_files[0].read_text(encoding="utf-8")

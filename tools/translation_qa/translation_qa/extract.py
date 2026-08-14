@@ -64,6 +64,45 @@ def extract_pdf(path: Path, passwords: list[str] | None = None) -> Document:
     )
 
 
+def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 2) -> str:
+    """Read a few pages so discovery can guess language without loading the whole book."""
+    try:
+        from pypdf import PdfReader
+    except ImportError:
+        return ""
+    if not path.is_file():
+        return ""
+    if path.suffix.lower() == ".txt":
+        try:
+            return path.read_text(encoding="utf-8")[:4000]
+        except OSError:
+            return ""
+    if path.suffix.lower() != ".pdf":
+        return ""
+    try:
+        reader = PdfReader(str(path))
+        if reader.is_encrypted:
+            unlocked = False
+            for password in passwords or load_pdf_passwords():
+                try:
+                    if reader.decrypt(password):
+                        unlocked = True
+                        break
+                except Exception:
+                    continue
+            if not unlocked:
+                return ""
+        chunks: list[str] = []
+        for page in list(reader.pages)[: max(1, pages)]:
+            try:
+                chunks.append(_normalize_extracted(page.extract_text() or ""))
+            except Exception:
+                continue
+        return "\n".join(chunk for chunk in chunks if chunk.strip())
+    except Exception:
+        return ""
+
+
 def extract_plain(path: Path, language: str = "und") -> Document:
     text = path.read_text(encoding="utf-8")
     paragraphs = [part.strip() for part in text.split("\n\n") if part.strip()]

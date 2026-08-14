@@ -1,0 +1,41 @@
+from translation_qa.catalog import BOOKS
+from translation_qa.discover import catalog_book_id, infer_book_id
+from pathlib import Path
+
+
+def test_catalog_has_twenty_store_titles():
+    ids = {book.id for book in BOOKS}
+    assert "bearing-the-cross" in ids
+    store_ids = ids - {"bearing-the-cross"}
+    assert len(store_ids) == 20
+
+
+def test_all_twenty_english_filenames_resolve():
+    samples = {
+        "AI-Augmented Personal Finance.pdf": "ai-augmented-personal-finance",
+        "Defending Your Ph.D. Dissertation.pdf": "defending-your-phd-dissertation",
+        "Austrian Economics.pdf": "austrian-economics",
+        "Public Choice.pdf": "public-choice",
+        "New Institutional Economics.pdf": "new-institutional-economics",
+        "Surviving Chilean Justice.pdf": "surviving-chilean-justice",
+        "Suffering Unjustly.pdf": "suffering-unjustly",
+        "Behind the Walls.pdf": "behind-the-walls",
+        "Bearing the Cross BOOK ONE Valparaiso part 1.pdf": "bearing-the-cross-1",
+        "Bearing the Cross BOOK TWO Valparaiso part 2.pdf": "bearing-the-cross-2",
+        "Bearing the Cross BOOK THREE Rancagua.pdf": "bearing-the-cross-3",
+        "Bearing the Cross BOOK FOUR Casablanca part 1.pdf": "bearing-the-cross-4",
+        "Bearing the Cross BOOK FIVE Casablanca part 2.pdf": "bearing-the-cross-5",
+        "Sentenced to the Future.pdf": "sentenced-to-the-future",
+        "Bible and Government.pdf": "bible-and-government",
+        "Christian Theology of Public Policy.pdf": "christian-theology-of-public-policy",
+        "A Primer on Modern Themes in Free Market Economics and Policy.pdf": "primer-on-modern-themes",
+        "Building Regulation Market Alternatives and Allodial Policy.pdf": "building-regulation-allodial-policy",
+        "Pro-Life Policy.pdf": "pro-life-policy",
+        "Life in Chile.pdf": "life-in-chile",
+    }
+    for name, book_id in samples.items():
+        assert infer_book_id(Path(name)) == book_id, name
+
+
+def test_isbn_catalog_match():
+    assert catalog_book_id(Path("kdp_9798905935367_fr.pdf")) == "public-choice"

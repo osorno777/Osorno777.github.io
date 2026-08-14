@@ -1,0 +1,293 @@
+"""Canonical Alertness Books catalog used to pair English sources with translations.
+
+Titles and ISBNs are taken from the public store at alertnessai.com/AlertnessBooks.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Book:
+    id: str
+    title: str
+    aliases: tuple[str, ...]
+    isbns: tuple[str, ...] = ()
+    family: str = ""
+    fallback: str = ""
+
+
+# 20 current store titles. Longer aliases are preferred during matching.
+BOOKS: tuple[Book, ...] = (
+    Book(
+        id="ai-augmented-personal-finance",
+        title="AI-Augmented Personal Finance",
+        aliases=(
+            "ai-augmented personal finance",
+            "ai augmented personal finance",
+            "aifin",
+            "finanzas personales con ia",
+            "finanzas personales aumentadas",
+            "field guide for liberty-minded investors",
+        ),
+        isbns=("9798905935275", "9798906195586"),
+    ),
+    Book(
+        id="defending-your-phd-dissertation",
+        title="Defending Your Ph.D. Dissertation",
+        aliases=(
+            "defending your ph d dissertation",
+            "defending your phd dissertation",
+            "hostile-reading survival guide",
+            "hostile reading survival guide",
+            "defendiendo tu tesis",
+            "tesis doctoral",
+        ),
+        isbns=("9798905935305", "9798906191076"),
+    ),
+    Book(
+        id="austrian-economics",
+        title="Austrian Economics",
+        aliases=(
+            "austrian economics",
+            "economia austriaca",
+            "primer for the liberty-minded reader",
+            "liberty-minded reader",
+        ),
+        isbns=("9798905935336", "9798905935350"),
+    ),
+    Book(
+        id="public-choice",
+        title="Public Choice",
+        aliases=(
+            "public choice",
+            "eleccion publica",
+            "primer for the politically sober",
+            "politically sober",
+        ),
+        isbns=("9798905935367", "9798905935381"),
+    ),
+    Book(
+        id="new-institutional-economics",
+        title="New Institutional Economics",
+        aliases=(
+            "new institutional economics",
+            "nueva economia institucional",
+            "primer on the rules of the game",
+            "rules of the game",
+        ),
+        isbns=("9798905935398", "9798906195579"),
+    ),
+    Book(
+        id="surviving-chilean-justice",
+        title="Surviving Chilean Justice",
+        aliases=(
+            "surviving chilean justice",
+            "sobreviviendo a la justicia chilena",
+            "justicia chilena",
+            "political persecution",
+        ),
+        isbns=("9798905935428", "9798906195371"),
+    ),
+    Book(
+        id="suffering-unjustly",
+        title="Suffering Unjustly",
+        aliases=(
+            "suffering unjustly",
+            "padeciendo injustamente",
+            "padeciendo",
+            "sufrimiento injusto",
+        ),
+        isbns=("9798905930911", "9798905930935"),
+        family="su",
+    ),
+    Book(
+        id="behind-the-walls",
+        title="Behind the Walls",
+        aliases=(
+            "behind the walls",
+            "detras de los muros",
+            "detras de las paredes",
+            "dietro i muri",
+            "derriere les murs",
+            "hinter den mauern",
+        ),
+        isbns=("9798905930942", "9798905930966"),
+        family="btw",
+    ),
+    Book(
+        id="bearing-the-cross-1",
+        title="Bearing the Cross  -  BOOK ONE: Valparaiso (part 1)",
+        aliases=(
+            "bearing the cross book one",
+            "bearing the cross book 1",
+            "btc book one",
+            "btc1",
+            "valparaiso part 1",
+            "valparaiso (part 1)",
+        ),
+        isbns=("9798905930973", "9798905930997"),
+        family="btc",
+        fallback="bearing-the-cross",
+    ),
+    Book(
+        id="bearing-the-cross-2",
+        title="Bearing the Cross  -  BOOK TWO: Valparaiso (part 2)",
+        aliases=(
+            "bearing the cross book two",
+            "bearing the cross book 2",
+            "btc book two",
+            "btc2",
+            "valparaiso part 2",
+            "valparaiso (part 2)",
+        ),
+        isbns=("9798905931000", "9798905931024"),
+        family="btc",
+        fallback="bearing-the-cross",
+    ),
+    Book(
+        id="bearing-the-cross-3",
+        title="Bearing the Cross  -  BOOK THREE: Valparaiso (part 3) and Rancagua",
+        aliases=(
+            "bearing the cross book three",
+            "bearing the cross book 3",
+            "btc book three",
+            "btc3",
+            "valparaiso part 3",
+            "rancagua",
+        ),
+        isbns=("9798905931031", "9798905931055"),
+        family="btc",
+        fallback="bearing-the-cross",
+    ),
+    Book(
+        id="bearing-the-cross-4",
+        title="Bearing the Cross  -  BOOK FOUR: Casablanca (part 1)",
+        aliases=(
+            "bearing the cross book four",
+            "bearing the cross book 4",
+            "btc book four",
+            "btc4",
+            "casablanca part 1",
+            "casablanca (part 1)",
+        ),
+        isbns=("9798905931062", "9798905931086"),
+        family="btc",
+        fallback="bearing-the-cross",
+    ),
+    Book(
+        id="bearing-the-cross-5",
+        title="Bearing the Cross  -  BOOK FIVE: Casablanca (part 2)",
+        aliases=(
+            "bearing the cross book five",
+            "bearing the cross book 5",
+            "btc book five",
+            "btc5",
+            "casablanca part 2",
+            "casablanca (part 2)",
+        ),
+        isbns=("9798905931093", "9798905931116"),
+        family="btc",
+        fallback="bearing-the-cross",
+    ),
+    Book(
+        id="bearing-the-cross",
+        title="Bearing the Cross (complete)",
+        aliases=(
+            "bearing the cross complete",
+            "bearing the cross",
+            "llevando la cruz",
+            "cargando la cruz",
+            "portant la croix",
+            "portando la croce",
+        ),
+        isbns=(),
+        family="btc",
+    ),
+    Book(
+        id="sentenced-to-the-future",
+        title="Sentenced to the Future",
+        aliases=(
+            "sentenced to the future",
+            "condenado al futuro",
+            "sentenced to future",
+        ),
+        isbns=("9798905939860", "9798905939853"),
+    ),
+    Book(
+        id="bible-and-government",
+        title="Bible and Government",
+        aliases=(
+            "bible and government",
+            "bible and goverment",
+            "biblia y gobierno",
+            "public policy from a christian perspective",
+        ),
+        isbns=("9798906193490", "9798906191212", "0972541802"),
+    ),
+    Book(
+        id="christian-theology-of-public-policy",
+        title="Christian Theology of Public Policy",
+        aliases=(
+            "christian theology of public policy",
+            "teologia cristiana de la politica publica",
+            "highlighting the american experience",
+            "ctpp",
+        ),
+        isbns=("9798906194107", "9798906191090", "0972975497"),
+    ),
+    Book(
+        id="primer-on-modern-themes",
+        title="A Primer on Modern Themes in Free Market Economics and Policy",
+        aliases=(
+            "primer on modern themes",
+            "modern themes in free market",
+            "free market economics and policy",
+        ),
+        isbns=("9798906195388", "9798906191168", "9798906195562"),
+    ),
+    Book(
+        id="building-regulation-allodial-policy",
+        title="Building Regulation, Market Alternatives, and Allodial Policy",
+        aliases=(
+            "building regulation",
+            "allodial policy",
+            "market alternatives and allodial",
+        ),
+        isbns=("9798906194510", "9798906191182"),
+    ),
+    Book(
+        id="pro-life-policy",
+        title="Pro-Life Policy",
+        aliases=(
+            "pro-life policy",
+            "pro life policy",
+            "politica pro vida",
+            "liberty and human rights",
+        ),
+        isbns=("9798905939778", "9798906195692"),
+    ),
+    Book(
+        id="life-in-chile",
+        title="Life in Chile",
+        aliases=(
+            "life in chile",
+            "vida en chile",
+            "cautionary guide for newcomers",
+        ),
+        isbns=("9798905939761", "9798905935329"),
+    ),
+)
+
+BOOKS_BY_ID = {book.id: book for book in BOOKS}
+
+# Short codes that should only match when they appear as their own token.
+SHORT_CODES = {
+    "btc": "bearing-the-cross",
+    "btw": "behind-the-walls",
+    "su": "suffering-unjustly",
+    "nie": "new-institutional-economics",
+    "ctpp": "christian-theology-of-public-policy",
+    "aifin": "ai-augmented-personal-finance",
+}
