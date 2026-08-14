@@ -1,0 +1,19 @@
+{
+  "english_dirs": [
+    "C:/Users/dinam/Documents/Writing",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings"
+  ],
+  "english_sources": [
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/BEARING THE CROSS/Bearing the Cross (complete).pdf",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/SUFFERING UNJUSTLY/Suffering Unjustly (2026).pdf",
+    "C:/Users/dinam/Documents/Writing/Behind the Walls/Behind the Walls (2026).pdf"
+  ],
+  "reference_translations": [
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/SUFFERING UNJUSTLY/Padeciendo Injustamente (2026).pdf"
+  ],
+  "translations_dir": "C:/Alertness AI/website books",
+  "translations_dirs": [
+    "C:/Alertness AI/website books"
+  ],
+  "output_dir": "./reports"
+}
