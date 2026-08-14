@@ -41,6 +41,14 @@ def audit_texts(
     translated_doc: Document | None = None,
 ) -> AuditResult:
     findings: list[Finding] = []
+    if language == "und":
+        findings.append(
+            Finding(
+                check="language.unknown",
+                severity=Severity.CRITICAL,
+                message="Unknown language; do not treat as clean.",
+            )
+        )
     findings.extend(check_refusals(translated))
     findings.extend(check_residual_english(translated, language))
 

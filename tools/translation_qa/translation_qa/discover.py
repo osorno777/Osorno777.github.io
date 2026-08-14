@@ -7,7 +7,14 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from translation_qa.catalog import BOOKS, BOOKS_BY_ID, FOREIGN_TITLE_ALIASES, NUMBERED_STEMS, SHORT_CODES
+from translation_qa.catalog import (
+    BOOKS,
+    BOOKS_BY_ID,
+    FOREIGN_TITLE_ALIASES,
+    FOREIGN_TITLE_LANGUAGES,
+    NUMBERED_STEMS,
+    SHORT_CODES,
+)
 from translation_qa.extract import (
     SIDECAR_TEXT_WARNING,
     extract_sample,
@@ -18,6 +25,7 @@ from translation_qa.extract import (
     looks_like_pdf,
 )
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
+from translation_qa.live_catalog import artefact_lane, live_translation_paths
 from translation_qa.textnorm import fold, isbn_digits
 
 _SKIP_NAME_MARKERS = (
@@ -53,6 +61,7 @@ _SKIP_PATH_MARKERS = (
     "indexing use",
     "_pending_delete",
     "node_modules",
+    "_staging",
 )
 
 _ENGLISH_MARKERS = (
@@ -113,6 +122,9 @@ def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool
         return "en"
     if _looks_english(path):
         return "en"
+    titled = _foreign_title_language(path)
+    if titled:
+        return titled
     if peek:
         try:
             sample = extract_sample(path, passwords=passwords)
@@ -273,6 +285,7 @@ def discover_pairs(
 
     candidates = list(_explicit_translations(config))
     candidates.extend(collect_pdfs(_config_folders(config, "translations_dirs", "translations_dir")))
+    candidates.extend(live_translation_paths(config))
 
     pairs: list[BookPair] = []
     seen: set[tuple[str, str]] = set()
@@ -300,6 +313,7 @@ def discover_pairs(
 def translation_candidates(config: dict) -> list[Path]:
     files = list(_explicit_translations(config))
     files.extend(collect_pdfs(_config_folders(config, "translations_dirs", "translations_dir")))
+    files.extend(live_translation_paths(config))
     return files
 
 
@@ -361,6 +375,9 @@ def inventory_rows(
         else:
             note = _skip_reason(path, english_by_id, pairs, passwords)
             role = "unmatched"
+        lane = artefact_lane(path)
+        if lane:
+            note = f"{note}; {lane}" if note else lane
         rows.append(
             {
                 "role": role,
@@ -414,6 +431,8 @@ def _pair_for_file(
         return None
     language = infer_language(translated, passwords=passwords, peek=peek)
     if language == "en":
+        return None
+    if language == "und":
         return None
     book_id = _match_book_id(translated, english_by_id)
     if not book_id:
@@ -475,6 +494,8 @@ def _skip_reason(
         return "English interior/filename without a language tag"
     if language == "und" and _looks_english(path):
         return "English interior/filename without a language tag"
+    if language == "und":
+        return "unknown language; do not treat as clean"
     if not _match_book_id(path, english_by_id):
         return "no matching English title"
     if book_id:
@@ -516,11 +537,11 @@ def _prefer_specific_btc(book_id: str | None, haystack: str) -> str | None:
     if book_id != "bearing-the-cross" and not book_id.startswith("bearing-the-cross"):
         return book_id
     part_hits = (
-        ("bearing-the-cross-1", ("book one", "book 1", "btc1", "valparaiso part 1")),
-        ("bearing-the-cross-2", ("book two", "book 2", "btc2", "valparaiso part 2")),
-        ("bearing-the-cross-3", ("book three", "book 3", "btc3", "rancagua", "valparaiso part 3")),
-        ("bearing-the-cross-4", ("book four", "book 4", "btc4", "casablanca part 1")),
-        ("bearing-the-cross-5", ("book five", "book 5", "btc5", "casablanca part 2")),
+        ("bearing-the-cross-1", ("book one", "book 1", "book1", "btc1", "btc-1", "valparaiso part 1")),
+        ("bearing-the-cross-2", ("book two", "book 2", "book2", "btc2", "btc-2", "valparaiso part 2")),
+        ("bearing-the-cross-3", ("book three", "book 3", "book3", "btc3", "btc-3", "rancagua", "valparaiso part 3")),
+        ("bearing-the-cross-4", ("book four", "book 4", "book4", "btc4", "btc-4", "casablanca part 1")),
+        ("bearing-the-cross-5", ("book five", "book 5", "book5", "btc5", "btc-5", "casablanca part 2")),
     )
     for part_id, markers in part_hits:
         if any(fold(marker) in haystack for marker in markers):
@@ -573,6 +594,18 @@ def _has_non_english_language_tag(path: Path) -> bool:
 def _foreign_title_alias(path: Path) -> bool:
     stem = fold(path.stem)
     return any(fold(alias) in stem for alias in FOREIGN_TITLE_ALIASES if len(fold(alias)) >= 6)
+
+
+def _foreign_title_language(path: Path) -> str | None:
+    stem = fold(path.stem)
+    best = ""
+    best_code: str | None = None
+    for alias, code in FOREIGN_TITLE_LANGUAGES.items():
+        alias_fold = fold(alias)
+        if alias_fold and alias_fold in stem and len(alias_fold) >= len(best):
+            best = alias_fold
+            best_code = code
+    return best_code
 
 
 def _looks_english(path: Path) -> bool:
@@ -651,7 +684,9 @@ def _translation_rank(path: Path) -> int:
         score -= 30
     if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
         score += 18
-    if "translations/private" in blob or "fulfillment/_out" in blob:
+    if "translations/private" in blob:
+        score += 30
+    elif "fulfillment/_out" in blob:
         score += 20
     return score
 
@@ -675,7 +710,16 @@ def _should_skip(path: Path) -> bool:
 
 def _skip_path(path: Path) -> bool:
     blob = str(path).lower().replace("\\", "/")
-    return any(marker in blob for marker in _SKIP_PATH_MARKERS)
+    parts = [part.lower() for part in Path(blob).parts]
+    for marker in _SKIP_PATH_MARKERS:
+        marker = marker.lower()
+        if " " in marker or "/" in marker:
+            if marker in blob:
+                return True
+            continue
+        if marker in parts:
+            return True
+    return False
 
 
 def _same_file(left: Path, right: Path) -> bool:

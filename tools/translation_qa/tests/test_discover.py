@@ -135,9 +135,11 @@ def test_list_command_prints_pair_count(tmp_path, capsys):
 
 
 def test_spanish_de_is_not_german():
-    assert infer_language(Path("Detrás de los Muros.pdf")) == "und"
+    assert infer_language(Path("Detrás de los Muros.pdf")) == "es"
+    assert infer_language(Path("Tras los Muros.pdf")) == "es"
     assert infer_language(Path("Detrás de los Muros (Spanish).pdf")) == "es"
     assert infer_book_id(Path("Detrás de los Muros.pdf")) == "behind-the-walls"
+    assert infer_book_id(Path("Tras los Muros.pdf")) == "behind-the-walls"
 
 
 def test_isbn_maps_to_catalog_book():
@@ -445,6 +447,7 @@ def test_padeciendo_in_english_folder_is_still_a_translation(tmp_path):
     )
     assert len(pairs) == 1
     assert pairs[0].book_id == "suffering-unjustly"
+    assert pairs[0].language == "es"
     assert infer_language(translated) != "en"
 
 

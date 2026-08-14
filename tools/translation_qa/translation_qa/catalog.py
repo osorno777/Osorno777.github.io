@@ -139,6 +139,7 @@ BOOKS: tuple[Book, ...] = (
         aliases=(
             "behind the walls",
             "detras de los muros",
+            "tras los muros",
             "detras de las paredes",
             "dietro i muri",
             "derriere les murs",
@@ -237,6 +238,8 @@ BOOKS: tuple[Book, ...] = (
             "cargando la cruz",
             "portant la croix",
             "portando la croce",
+            "nest kriz",
+            "nest_kriz",
         ),
         isbns=(),
         family="btc",
@@ -362,6 +365,7 @@ FOREIGN_TITLE_ALIASES: tuple[str, ...] = (
     "padeciendo injustamente",
     "padeciendo",
     "detras de los muros",
+    "tras los muros",
     "detras de las paredes",
     "dietro i muri",
     "derriere les murs",
@@ -384,7 +388,35 @@ FOREIGN_TITLE_ALIASES: tuple[str, ...] = (
     "la vida en chile",
 )
 
-# Numbered website-book stems (01_ / 03b_ / 05_). Longer prefixes must come first.
+# Foreign titles used both to detect a translation and to assign language
+# when the filename has no ISO tag. Unknown language must not read as clean.
+FOREIGN_TITLE_LANGUAGES: dict[str, str] = {
+    "padeciendo injustamente": "es",
+    "padeciendo": "es",
+    "detras de los muros": "es",
+    "tras los muros": "es",
+    "detras de las paredes": "es",
+    "dietro i muri": "it",
+    "derriere les murs": "fr",
+    "hinter den mauern": "de",
+    "llevando la cruz": "es",
+    "cargando la cruz": "es",
+    "portant la croix": "fr",
+    "portando la croce": "it",
+    "finanzas personales": "es",
+    "defendiendo tu tesis": "es",
+    "economia austriaca": "es",
+    "eleccion publica": "es",
+    "nueva economia institucional": "es",
+    "sobreviviendo a la justicia chilena": "es",
+    "condenado al futuro": "es",
+    "biblia y gobierno": "es",
+    "teologia cristiana": "es",
+    "politica pro vida": "es",
+    "vida en chile": "es",
+    "la vida en chile": "es",
+}
+
 NUMBERED_STEMS: tuple[tuple[str, str], ...] = (
     ("03b", "public-choice"),
     ("01", "ai-augmented-personal-finance"),

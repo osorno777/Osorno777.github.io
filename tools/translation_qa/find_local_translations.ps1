@@ -29,13 +29,15 @@ foreach ($root in $roots) {
             $rel = $_.FullName.ToLower()
             $isPrivate = $rel -like "*\admin\translations\private\*"
             $isRebuild = $rel -like "*\fulfillment\_out\*"
-            $ext -in @(".epub", ".pdf", ".txt", ".html", ".htm", ".xhtml") -and (
-                $ext -eq ".epub" -or $isPrivate -or $isRebuild -or $_.Name -match $slugPattern
-            ) -and ($_.Name -notmatch '(?i)sidecar|refusal_text')
+            $isLiveCatalog = $_.Name -ieq "store_catalog.json"
+            $ext -in @(".epub", ".pdf", ".txt", ".html", ".htm", ".xhtml", ".json") -and (
+                $ext -eq ".epub" -or $isPrivate -or $isRebuild -or $isLiveCatalog -or $_.Name -match $slugPattern
+            ) -and ($_.Name -notmatch '(?i)sidecar|refusal_text') -and ($rel -notlike "*\_staging\*")
         } |
         ForEach-Object {
             $ext = $_.Extension.ToLower()
-            $kind = if ($_.FullName.ToLower() -like "*\admin\translations\private\*") {
+            $kind = if ($_.Name -ieq "store_catalog.json") { "store-catalog" }
+                elseif ($_.FullName.ToLower() -like "*\admin\translations\private\*") {
                     if ($ext -in @(".html", ".htm", ".xhtml")) { "private-html" } else { "private" }
                 }
                 elseif ($_.FullName.ToLower() -like "*\fulfillment\_out\*") { "rebuild-html" }

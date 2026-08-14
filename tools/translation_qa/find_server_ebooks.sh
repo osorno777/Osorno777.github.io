@@ -53,7 +53,11 @@ else
   echo "  not present at $FOUND/fulfillment/_out"
 fi
 echo
-find "$FOUND" \( -iname 'WORKORDERS_RELAY*.md' -o -iname 'LIC_EN_metadata.md' -o -iname 'translate_html.py' -o -iname 'fix_refusal_text.py' \) 2>/dev/null | head -20
+echo "store_catalog.json (live storefront map):"
+find "$FOUND" -iname 'store_catalog.json' 2>/dev/null | head -10
+echo
+echo "Bookstore relay / pipeline files (list only; do not edit):"
+find "$FOUND" \( -iname 'WORKORDERS_RELAY*.md' -o -iname 'WORKORDERS_PULL_CONTAMINATED*.md' -o -iname 'LIC_EN_metadata.md' -o -iname 'translate_html.py' -o -iname 'fix_refusal_text.py' -o -iname 'lineage_detect.py' -o -iname 'store_catalog.json' \) 2>/dev/null | head -20
 echo
 echo "First 40 EPUB/PDF paths:"
 find "$FOUND" \( -iname '*.epub' -o -iname '*.pdf' \) \

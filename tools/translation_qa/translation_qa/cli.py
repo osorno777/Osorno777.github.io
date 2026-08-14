@@ -103,6 +103,13 @@ def main(argv: list[str] | None = None) -> int:
             language = pair.language
             if language == "und":
                 language = infer_language(pair.translated, passwords=passwords, peek=True)
+            if language == "und":
+                failed += 1
+                print(
+                    f"[{index}/{len(pairs)}] skip unknown language (not clean): {pair.translated}",
+                    file=sys.stderr,
+                )
+                continue
             stem = _safe(f"{pair.book_id}__{pair.translated.stem}__{language}")
             existing = output_dir / f"{stem}.html"
             if existing.exists() and not args.force:

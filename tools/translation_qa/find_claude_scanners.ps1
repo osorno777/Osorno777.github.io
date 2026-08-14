@@ -60,7 +60,7 @@ foreach ($path in ($pyFiles | Select-Object -Unique)) {
             $i++
             $line = $_
             if ($line -match '(?i)password|api[_-]?key|secret|token\s*=') { return }
-            if ($line -notmatch '(?i)[A-Za-z]:\\|/data/|website books|\.epub|kdp_by_isbn|Alertness|store_epub|agent_workflows|EPUB\\|translations[/\\]private|WORKORDERS_RELAY|LIC_EN_metadata|translate_html|fix_refusal|bookstore') {
+            if ($line -notmatch '(?i)[A-Za-z]:\\|/data/|website books|\.epub|kdp_by_isbn|_staging|store_catalog|lineage_detect|translations[/\\]private|Alertness|store_epub|agent_workflows|EPUB\\|WORKORDERS|LIC_EN_metadata|translate_html|fix_refusal|qr_fix|preflight_book_gate|bookstore') {
                 return
             }
             $clip = $line.Trim()
@@ -77,9 +77,23 @@ $namedRows = New-Object System.Collections.Generic.List[string]
 $namedRows.Add("kind`tpath") | Out-Null
 $namedPatterns = @(
     "WORKORDERS_RELAY*.md",
+    "WORKORDERS_ALL_LANES*.md",
+    "WORKORDERS_PULL_CONTAMINATED*.md",
+    "WORKORDERS_AND_STATUS*.md",
+    "LAUNCH_TODAY_EN_IT_workorders*.md",
+    "CORRECTION_splice_coverage*.md",
+    "DEFECT_TAXONOMY*.md",
     "LIC_EN_metadata.md",
+    "store_catalog.json",
+    "PULL_LIST_*.csv",
     "translate_html.py",
-    "fix_refusal_text.py"
+    "fix_refusal_text.py",
+    "lineage_detect.py",
+    "preflight_book_gate.py",
+    "sweep_retail_epub_script_bleed.py",
+    "readers_fix_and_deploy.py",
+    "verify_fix_landed.py",
+    "scan_instruction_leak.py"
 )
 foreach ($root in $roots) {
     foreach ($pattern in $namedPatterns) {
@@ -93,6 +107,9 @@ foreach ($root in $roots) {
             $_.FullName.ToLower() -like "*\admin\translations\private"
         } |
         ForEach-Object { $namedRows.Add("translations-private`t$($_.FullName)") }
+    Get-ChildItem -Path $root -Recurse -Directory -Filter "qr_fix" -ErrorAction SilentlyContinue |
+        Where-Object { -not (Test-SkipPath $_.FullName) } |
+        ForEach-Object { $namedRows.Add("qr-fix`t$($_.FullName)") }
 }
 $namedRows | Select-Object -Unique | Set-Content -Path $namedOut -Encoding utf8
 
