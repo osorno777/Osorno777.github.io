@@ -3,22 +3,12 @@ setlocal
 cd /d "%~dp0"
 if not exist reports mkdir reports
 
-echo Pulling the catalog-scan update (branch cursor/translation-veracity-checker-5bc6)...
-git -C "%~dp0..\.." fetch origin cursor/translation-veracity-checker-5bc6
-if errorlevel 1 (
-  echo git fetch failed. Continuing with the files already on disk.
-) else (
-  git -C "%~dp0..\.." checkout cursor/translation-veracity-checker-5bc6
-  git -C "%~dp0..\.." pull origin cursor/translation-veracity-checker-5bc6
-)
-
 set "QA_ROOT=E:\translation_qa"
 set "QA_REPORTS=%QA_ROOT%\reports"
 set "QA_TMP=%QA_ROOT%\tmp"
 set "QA_PYC=%QA_ROOT%\pycache"
 
-echo.
-echo === Moving reports and temp files from C: onto E: ===
+echo === Moving reports and temp files from C: onto E: (before git pull) ===
 if not exist E:\ (
   echo Drive E: is not ready. Assign letter E: to the extra disk and run this again.
   pause
@@ -37,6 +27,8 @@ set "PYTHONPYCACHEPREFIX=%QA_PYC%"
 set "PYTHONUNBUFFERED=1"
 set "PIP_CACHE_DIR=%QA_ROOT%\pip-cache"
 
+if exist "%~dp0reports\*.json" del /q "%~dp0reports\*.json" 2>nul
+if exist "%~dp0reports\*.csv" del /q "%~dp0reports\*.csv" 2>nul
 if exist "%~dp0reports\" (
   echo Moving C:\ reports to %QA_REPORTS%
   robocopy "%~dp0reports" "%QA_REPORTS%" /E /MOVE /R:1 /W:1 /NFL /NDL /NJH /NJS
@@ -50,6 +42,16 @@ if exist "%~dp0translation_qa\__pycache__\" robocopy "%~dp0translation_qa\__pyca
 if exist "%~dp0tests\__pycache__\" robocopy "%~dp0tests\__pycache__" "%QA_PYC%\tests_pycache" /E /MOVE /R:1 /W:1 /NFL /NDL /NJH /NJS >nul
 if exist "%~dp0.pytest_cache\" robocopy "%~dp0.pytest_cache" "%QA_PYC%\pytest_cache" /E /MOVE /R:1 /W:1 /NFL /NDL /NJH /NJS >nul
 mkdir "%~dp0reports" 2>nul
+
+echo.
+echo Pulling the catalog-scan update (branch cursor/translation-veracity-checker-5bc6)...
+git -C "%~dp0..\.." fetch origin cursor/translation-veracity-checker-5bc6
+if errorlevel 1 (
+  echo git fetch failed. Continuing with the files already on disk.
+) else (
+  git -C "%~dp0..\.." checkout cursor/translation-veracity-checker-5bc6
+  git -C "%~dp0..\.." pull origin cursor/translation-veracity-checker-5bc6
+)
 
 py -m translation_qa use-drive --letter E --repo "%~dp0."
 if errorlevel 1 (

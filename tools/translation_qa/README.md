@@ -8,17 +8,22 @@ The checker **only reports problems**. It does not rewrite PDFs. Correction is a
 
 ## Get the latest files onto this Windows PC
 
-If the repo is already cloned at `C:\Users\dinam\Osorno777.github.io`:
+If `git pull` dies with `No space left on device`, do **not** run `.\rescan.bat` yet. The new `E:` script is not on disk. In PowerShell, stop any running scan with Ctrl+C, then:
 
 ```powershell
+cd $HOME\Osorno777.github.io\tools\translation_qa
+if (Test-Path reports) {
+  Remove-Item reports\*.json, reports\*.csv -Force -ErrorAction SilentlyContinue
+  New-Item -ItemType Directory -Force -Path E:\translation_qa\reports, E:\translation_qa\tmp | Out-Null
+  robocopy "$PWD\reports" E:\translation_qa\reports /E /MOVE /R:1 /W:1
+}
 cd $HOME\Osorno777.github.io
-git fetch origin cursor/translation-veracity-checker-5bc6:cursor/translation-veracity-checker-5bc6
-git checkout cursor/translation-veracity-checker-5bc6
+git pull origin cursor/translation-veracity-checker-5bc6
 cd tools\translation_qa
 .\rescan.bat
 ```
 
-`rescan.bat` moves existing reports and Python junk from `C:` onto `E:\translation_qa` (reports, tmp, pycache), then writes compact HTML there. Resume skips HTML reports already on `E:`. Close the paused "Presione una tecla" window first; that run already died. Do not `--llm`. Do not start a second scan.
+`rescan.bat` moves leftover `C:` reports onto `E:\translation_qa` **before** it pulls, then writes compact HTML there. Resume skips HTML already on `E:`. Do not `--llm`. Do not start a second scan.
 
 If you do not have the clone yet:
 
