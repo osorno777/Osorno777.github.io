@@ -4,9 +4,9 @@ cd /d "%~dp0"
 if not exist reports mkdir reports
 
 echo Pulling the catalog-scan update (branch cursor/translation-veracity-checker-5bc6)...
-git -C "%~dp0..\.." fetch origin cursor/translation-veracity-checker-5bc6:cursor/translation-veracity-checker-5bc6
+git -C "%~dp0..\.." fetch origin cursor/translation-veracity-checker-5bc6
 if errorlevel 1 (
-  echo git fetch failed. If this folder is already up to date, the scan will still run.
+  echo git fetch failed. Continuing with the files already on disk.
 ) else (
   git -C "%~dp0..\.." checkout cursor/translation-veracity-checker-5bc6
   git -C "%~dp0..\.." pull origin cursor/translation-veracity-checker-5bc6

@@ -224,3 +224,58 @@ def test_scan_resumes_existing_report(tmp_path, capsys):
     output = capsys.readouterr().out
     assert "Resume skip" in output
     assert "<!-- marker -->" in html_files[0].read_text(encoding="utf-8")
+
+
+def test_xml_named_pdf_is_skipped(tmp_path):
+    english = tmp_path / "Behind the Walls (2026).pdf"
+    english.write_bytes(b"%PDF")
+    translations = tmp_path / "website"
+    translations.mkdir()
+    xml = translations / "Behind the Walls (Spanish).pdf"
+    xml.write_bytes(b"<?xml version='1.0'?><catalog/>")
+    real = translations / "Behind the Walls (French).pdf"
+    real.write_bytes(b"%PDF")
+    leftover = unmatched_translations(
+        {
+            "english_sources": [str(english)],
+            "translations_dir": str(translations),
+            "peek_language": False,
+        }
+    )
+    reasons = " ".join(reason for _, reason in leftover)
+    assert "xml" in reasons
+    pairs = discover_pairs(
+        {
+            "english_sources": [str(english)],
+            "translations_dir": str(translations),
+            "peek_language": False,
+        }
+    )
+    assert [pair.translated.name for pair in pairs] == ["Behind the Walls (French).pdf"]
+
+
+def test_scan_continues_after_xml_file(tmp_path, capsys):
+    english = tmp_path / "Suffering Unjustly.txt"
+    xml = tmp_path / "Suffering Unjustly German.pdf"
+    translated = tmp_path / "Suffering Unjustly Spanish.txt"
+    english.write_text("Christ suffered unjustly in 33.", encoding="utf-8")
+    xml.write_bytes(b"<?xml version='1.0'?><doc/>")
+    translated.write_text("Cristo padecio injustamente en 33.", encoding="utf-8")
+    reports = tmp_path / "reports"
+    config_path = tmp_path / "paths.json"
+    config_path.write_text(
+        '{"english_sources": ["%s"], "translations_dir": "%s", "output_dir": "%s", "peek_language": false}'
+        % (
+            str(english).replace("\\", "/"),
+            str(tmp_path).replace("\\", "/"),
+            str(reports).replace("\\", "/"),
+        ),
+        encoding="utf-8",
+    )
+    assert main(["inventory", "--config", str(config_path)]) == 0
+    inventory_out = capsys.readouterr().out
+    assert "xml" in inventory_out
+    assert main(["scan", "--config", str(config_path)]) in {0, 1}
+    html_files = list(reports.glob("*.html"))
+    assert html_files
+    assert any("Spanish" in path.name or "es" in path.name for path in html_files)

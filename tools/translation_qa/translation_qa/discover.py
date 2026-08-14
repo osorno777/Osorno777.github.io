@@ -7,7 +7,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 from translation_qa.catalog import BOOKS, BOOKS_BY_ID, SHORT_CODES
-from translation_qa.extract import extract_sample
+from translation_qa.extract import extract_sample, header_kind, looks_like_pdf
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
 from translation_qa.textnorm import fold, isbn_digits
 
@@ -64,7 +64,7 @@ def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool
             return part
     if _looks_english(path):
         return "en"
-    if peek:
+    if peek and looks_like_pdf(path):
         sample = extract_sample(path, passwords=passwords)
         guessed = detect_language_from_text(sample)
         if guessed != "und":
@@ -177,10 +177,13 @@ def select_english_sources(config: dict) -> list[Path]:
     return [path for path in by_id.values() if path]
 
 
-def discover_pairs(config: dict, passwords: list[str] | None = None) -> list[BookPair]:
+def discover_pairs(
+    config: dict, passwords: list[str] | None = None, peek: bool | None = None
+) -> list[BookPair]:
     english_sources = select_english_sources(config)
     english_by_id = {infer_book_id(path): path for path in english_sources if infer_book_id(path)}
-    peek = bool(config.get("peek_language", True))
+    if peek is None:
+        peek = bool(config.get("peek_language", True))
 
     translation_folders = [Path(item) for item in config.get("translations_dirs", []) if item]
     if config.get("translations_dir"):
@@ -232,13 +235,18 @@ def translation_candidates(config: dict) -> list[Path]:
     return files
 
 
-def unmatched_translations(config: dict, passwords: list[str] | None = None) -> list[tuple[Path, str]]:
+def unmatched_translations(
+    config: dict, passwords: list[str] | None = None, peek: bool | None = None
+) -> list[tuple[Path, str]]:
     english_by_id = {
         infer_book_id(path): path
         for path in select_english_sources(config)
         if infer_book_id(path)
     }
-    paired = {pair.translated.resolve() if pair.translated.exists() else pair.translated for pair in discover_pairs(config, passwords)}
+    paired = {
+        pair.translated.resolve() if pair.translated.exists() else pair.translated
+        for pair in discover_pairs(config, passwords, peek=peek)
+    }
     leftover: list[tuple[Path, str]] = []
     for path in translation_candidates(config):
         try:
@@ -251,9 +259,12 @@ def unmatched_translations(config: dict, passwords: list[str] | None = None) -> 
     return leftover
 
 
-def inventory_rows(config: dict, passwords: list[str] | None = None) -> list[dict[str, str]]:
+def inventory_rows(
+    config: dict, passwords: list[str] | None = None, peek: bool | None = None
+) -> list[dict[str, str]]:
     """Describe every PDF the config can see, whether or not it paired."""
-    peek = bool(config.get("peek_language", True))
+    if peek is None:
+        peek = False
     rows: list[dict[str, str]] = []
     for path in select_english_sources(config):
         rows.append(
@@ -270,7 +281,10 @@ def inventory_rows(config: dict, passwords: list[str] | None = None) -> list[dic
         for path in select_english_sources(config)
         if infer_book_id(path)
     }
-    paired = {pair.translated.resolve() if pair.translated.exists() else pair.translated for pair in discover_pairs(config, passwords)}
+    paired = {
+        pair.translated.resolve() if pair.translated.exists() else pair.translated
+        for pair in discover_pairs(config, passwords, peek=peek)
+    }
     for path in translation_candidates(config):
         try:
             resolved = path.resolve()
@@ -297,6 +311,8 @@ def inventory_rows(config: dict, passwords: list[str] | None = None) -> list[dic
 
 
 def _skip_reason(path: Path, english_by_id: dict[str, Path], passwords: list[str] | None = None) -> str:
+    if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
+        return f"not a PDF ({header_kind(path)} header)"
     if _should_skip(path):
         return "skipped DO-NOT-USE/BIODUP"
     language = infer_language(path, passwords=passwords, peek=bool(passwords is not None))
@@ -437,7 +453,11 @@ def _english_rank(path: Path) -> int:
 
 def _should_skip(path: Path) -> bool:
     name = path.name.lower()
-    return any(marker in name for marker in _SKIP_NAME_MARKERS)
+    if any(marker in name for marker in _SKIP_NAME_MARKERS):
+        return True
+    if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
+        return True
+    return False
 
 
 def _same_file(left: Path, right: Path) -> bool:

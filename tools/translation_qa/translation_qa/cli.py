@@ -98,29 +98,40 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Found {len(pairs)} pair(s) to check.")
         worst = 0
         skipped = 0
+        failed = 0
         for index, pair in enumerate(pairs, start=1):
-            stem = _safe(f"{pair.book_id}__{pair.translated.stem}__{pair.language}")
+            language = pair.language
+            if language == "und":
+                language = infer_language(pair.translated, passwords=passwords, peek=True)
+            stem = _safe(f"{pair.book_id}__{pair.translated.stem}__{language}")
             existing = output_dir / f"{stem}.html"
             if existing.exists() and not args.force:
                 skipped += 1
-                print(f"[{index}/{len(pairs)}] Resume skip {pair.book_id} -> {pair.language}: {existing.name}")
+                print(f"[{index}/{len(pairs)}] Resume skip {pair.book_id} -> {language}: {existing.name}")
                 continue
-            print(f"[{index}/{len(pairs)}] Checking {pair.book_id} -> {pair.language}: {pair.translated}")
-            result = audit_files(
-                pair.english,
-                pair.translated,
-                pair.language,
-                word_by_word=not args.fast,
-                use_llm=args.llm,
-                delay_seconds=args.delay,
-                max_sentences=args.max_sentences,
-                passwords=passwords,
-            )
+            print(f"[{index}/{len(pairs)}] Checking {pair.book_id} -> {language}: {pair.translated}")
+            try:
+                result = audit_files(
+                    pair.english,
+                    pair.translated,
+                    language,
+                    word_by_word=not args.fast,
+                    use_llm=args.llm,
+                    delay_seconds=args.delay,
+                    max_sentences=args.max_sentences,
+                    passwords=passwords,
+                )
+            except ExtractionError as exc:
+                failed += 1
+                print(f"  skip unreadable: {exc}", file=sys.stderr)
+                continue
             paths = write_reports(result, output_dir, stem)
             _print_summary(result, paths)
             worst = max(worst, _exit_code(result))
         if skipped:
             print(f"Resumed: skipped {skipped} pair(s) that already had reports. Use --force to redo.")
+        if failed:
+            print(f"Skipped {failed} unreadable file(s). The rest of the catalog still ran.")
         return worst
     except ExtractionError as exc:
         print(str(exc), file=sys.stderr)

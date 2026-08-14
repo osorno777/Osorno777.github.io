@@ -1,13 +1,44 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from translation_qa.models import Document
 from translation_qa.passwords import load_pdf_passwords
 
+logging.getLogger("pypdf").setLevel(logging.ERROR)
+logging.getLogger("PyPDF2").setLevel(logging.ERROR)
+
 
 class ExtractionError(RuntimeError):
     pass
+
+
+def looks_like_pdf(path: Path) -> bool:
+    """True only when the file actually starts with %PDF. Many KDP/XML sidecars are named .pdf."""
+    if path.suffix.lower() != ".pdf":
+        return False
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(16)
+    except OSError:
+        return False
+    return head.startswith(b"%PDF")
+
+
+def header_kind(path: Path) -> str:
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(16)
+    except OSError:
+        return "unreadable"
+    if head.startswith(b"%PDF"):
+        return "pdf"
+    if head.lstrip().startswith(b"<?xml") or head.lstrip().startswith(b"<"):
+        return "xml"
+    if head.startswith(b"PK"):
+        return "zip"
+    return "other"
 
 
 def extract_pdf(path: Path, passwords: list[str] | None = None) -> Document:
@@ -18,6 +49,10 @@ def extract_pdf(path: Path, passwords: list[str] | None = None) -> Document:
 
     if not path.is_file():
         raise ExtractionError(f"PDF not found: {path}")
+    if not looks_like_pdf(path):
+        raise ExtractionError(
+            f"Not a PDF ({header_kind(path)} header): {path}. Skipping this file."
+        )
 
     reader = PdfReader(str(path))
     encrypted = bool(reader.is_encrypted)
@@ -78,6 +113,8 @@ def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 
         except OSError:
             return ""
     if path.suffix.lower() != ".pdf":
+        return ""
+    if not looks_like_pdf(path):
         return ""
     try:
         reader = PdfReader(str(path))
