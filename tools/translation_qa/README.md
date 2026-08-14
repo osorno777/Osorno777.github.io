@@ -18,7 +18,9 @@ cd tools\translation_qa
 .\rescan.bat
 ```
 
-`rescan.bat` lists every PDF it can see (all 20 store titles and language folders), writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a report, so you can stop and rerun.
+`rescan.bat` archives the old three English-interior `und` reports (the ones named Behind the Walls INTERIOR / DO-NOT-USE), lists every PDF it can see, writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a new report, so you can stop and rerun.
+
+Do not keep counting those three old HTML files. `Get-Process python*, py*` returning nothing means the old scan is already finished; there is nothing to halt.
 
 If you do not have the clone yet:
 

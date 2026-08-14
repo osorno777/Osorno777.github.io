@@ -13,6 +13,17 @@ if errorlevel 1 (
 )
 
 copy /Y paths.example.json paths.json >nul
+
+if not exist reports\old-english-interiors mkdir reports\old-english-interiors
+echo.
+echo --- Archiving leftover English-interior reports from the old scan ---
+for %%F in (reports\*DO-NOT-USE*.html reports\*DO-NOT-USE*.csv reports\*DO-NOT-USE*.json reports\*__und.html reports\*__und.csv reports\*__und.json) do (
+  if exist "%%F" move /Y "%%F" reports\old-english-interiors\ >nul
+)
+echo Remaining HTML reports:
+dir /b reports\*.html 2>nul
+if errorlevel 1 echo   (none - a new catalog scan will start at 0)
+
 echo.
 echo --- Inventory of every PDF the checker can see ---
 py -m translation_qa inventory --config paths.json
