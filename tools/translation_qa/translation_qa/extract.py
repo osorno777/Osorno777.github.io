@@ -100,23 +100,19 @@ def extract_pdf(path: Path, passwords: list[str] | None = None) -> Document:
 
 
 def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 2) -> str:
-    """Read a few pages so discovery can guess language without loading the whole book."""
+    """Read a few pages so discovery can guess language without loading the whole book.
+
+    Never raises: junk XML, truncated PDFs, and Windows-1252 .txt files must not abort a catalog scan.
+    """
     try:
-        from pypdf import PdfReader
-    except ImportError:
-        return ""
-    if not path.is_file():
-        return ""
-    if path.suffix.lower() == ".txt":
-        try:
-            return path.read_text(encoding="utf-8")[:4000]
-        except OSError:
+        if not path.is_file():
             return ""
-    if path.suffix.lower() != ".pdf":
-        return ""
-    if not looks_like_pdf(path):
-        return ""
-    try:
+        if path.suffix.lower() == ".txt":
+            return read_text_lenient(path, limit=4000)
+        if path.suffix.lower() != ".pdf" or not looks_like_pdf(path):
+            return ""
+        from pypdf import PdfReader
+
         reader = PdfReader(str(path))
         if reader.is_encrypted:
             unlocked = False
@@ -141,9 +137,33 @@ def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 
 
 
 def extract_plain(path: Path, language: str = "und") -> Document:
-    text = path.read_text(encoding="utf-8")
+    text = read_text_lenient(path)
+    if not text.strip():
+        raise ExtractionError(f"No extractable text in {path}")
     paragraphs = [part.strip() for part in text.split("\n\n") if part.strip()]
     return Document(path=path, text=text, pages=paragraphs or [text], language=language, title=path.stem)
+
+
+def read_text_lenient(path: Path, limit: int | None = None) -> str:
+    """Decode a .txt file without crashing on Windows-1252 or Latin-1 bytes."""
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return ""
+    if b"\x00" in data[:8192]:
+        return ""
+    if limit is not None:
+        data = data[: max(limit * 4, 8000)]
+    for encoding in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            text = data.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        return ""
+    text = _normalize_extracted(text)
+    return text[:limit] if limit is not None else text
 
 
 def _normalize_extracted(text: str) -> str:

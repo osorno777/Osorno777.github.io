@@ -279,3 +279,32 @@ def test_scan_continues_after_xml_file(tmp_path, capsys):
     html_files = list(reports.glob("*.html"))
     assert html_files
     assert any("Spanish" in path.name or "es" in path.name for path in html_files)
+
+
+def test_extract_sample_accepts_windows1252_txt(tmp_path):
+    from translation_qa.extract import extract_sample
+
+    path = tmp_path / "notes.txt"
+    path.write_bytes("Padeciendo injustamente.\xad More text.".encode("cp1252"))
+    sample = extract_sample(path)
+    assert "Padeciendo" in sample
+
+
+def test_discover_does_not_crash_on_latin1_txt(tmp_path):
+    english = tmp_path / "Suffering Unjustly.pdf"
+    english.write_bytes(b"%PDF")
+    junk = tmp_path / "website"
+    junk.mkdir()
+    latin = junk / "Suffering Unjustly Spanish.txt"
+    latin.write_bytes("Cristo padeci\xf3 injustamente.".encode("latin-1"))
+    xml = junk / "catalog.pdf"
+    xml.write_bytes(b"<?xml version='1.0'?><doc/>")
+    pairs = discover_pairs(
+        {
+            "english_sources": [str(english)],
+            "translations_dir": str(junk),
+            "peek_language": True,
+        }
+    )
+    assert len(pairs) == 1
+    assert pairs[0].translated.name.endswith(".txt")

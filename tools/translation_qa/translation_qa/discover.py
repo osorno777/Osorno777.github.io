@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -64,11 +65,14 @@ def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool
             return part
     if _looks_english(path):
         return "en"
-    if peek and looks_like_pdf(path):
-        sample = extract_sample(path, passwords=passwords)
-        guessed = detect_language_from_text(sample)
-        if guessed != "und":
-            return guessed
+    if peek:
+        try:
+            sample = extract_sample(path, passwords=passwords)
+            guessed = detect_language_from_text(sample)
+            if guessed != "und":
+                return guessed
+        except Exception:
+            return "und"
     return "und"
 
 
@@ -183,7 +187,7 @@ def discover_pairs(
     english_sources = select_english_sources(config)
     english_by_id = {infer_book_id(path): path for path in english_sources if infer_book_id(path)}
     if peek is None:
-        peek = bool(config.get("peek_language", True))
+        peek = bool(config.get("peek_language", False))
 
     translation_folders = [Path(item) for item in config.get("translations_dirs", []) if item]
     if config.get("translations_dir"):
@@ -196,31 +200,35 @@ def discover_pairs(
     pairs: list[BookPair] = []
     seen: set[tuple[str, str]] = set()
     for translated in candidates:
-        if _should_skip(translated):
-            continue
-        language = infer_language(translated, passwords=passwords, peek=peek)
-        if language == "en":
-            continue
-        book_id = _match_book_id(translated, english_by_id)
-        if not book_id:
-            continue
-        english_path = english_by_id[book_id]
-        if _same_file(translated, english_path):
-            continue
-        if language == "und" and _looks_english(translated):
-            continue
-        key = (str(english_path.resolve()) if english_path.exists() else str(english_path), str(translated))
-        if key in seen:
-            continue
-        seen.add(key)
-        pairs.append(
-            BookPair(
-                english=english_path,
-                translated=translated,
-                language=language,
-                book_id=book_id,
+        try:
+            if _should_skip(translated):
+                continue
+            language = infer_language(translated, passwords=passwords, peek=peek)
+            if language == "en":
+                continue
+            book_id = _match_book_id(translated, english_by_id)
+            if not book_id:
+                continue
+            english_path = english_by_id[book_id]
+            if _same_file(translated, english_path):
+                continue
+            if language == "und" and _looks_english(translated):
+                continue
+            key = (str(english_path.resolve()) if english_path.exists() else str(english_path), str(translated))
+            if key in seen:
+                continue
+            seen.add(key)
+            pairs.append(
+                BookPair(
+                    english=english_path,
+                    translated=translated,
+                    language=language,
+                    book_id=book_id,
+                )
             )
-        )
+        except Exception as exc:
+            print(f"  skip {translated}: {exc}", file=sys.stderr)
+            continue
     pairs.sort(key=lambda item: (item.book_id, item.language, str(item.translated)))
     return pairs
 
