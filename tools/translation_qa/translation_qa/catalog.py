@@ -8,6 +8,7 @@ every language. Audiobooks are separate products and are not scanned.
 Live store (2026-08-14): 20 English ebooks, about 537 non-English ebooks,
 and about 67 audiobooks. Unique ebook ISBNs are about 557, which matches the
 "about 550 products" bookstore figure when audiobooks are counted separately.
+IngramSpark has no audiobook programme (print and ebook only).
 """
 
 from __future__ import annotations
@@ -330,6 +331,14 @@ BOOKS: tuple[Book, ...] = (
             "vintage linc",
         ),
         isbns=("9798905939761", "9798905935329"),
+        # Consultation is an added route, not an Ingram-only replacement
+        # (bookstore WORKORDERS_RELAY_20260813_1330.md, recorded on the
+        # July 12 LIC_EN_metadata.md record). Included when the buyer has
+        # paid the full price: one full-list purchase, or paperback + ebook,
+        # or the audiobook. Same wording for every channel. IngramSpark has
+        # no audiobook programme (print and ebook only); that clause is
+        # inert there and must not be presented as something Ingram can
+        # fulfil.
     ),
 )
 

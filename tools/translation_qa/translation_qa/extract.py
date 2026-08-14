@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import re
 import zipfile
@@ -12,9 +13,46 @@ from translation_qa.passwords import load_pdf_passwords
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 logging.getLogger("PyPDF2").setLevel(logging.ERROR)
 
+# Bookstore relay 2026-08-13: the sidecar "text" field is the contamination
+# that was removed, not the original it replaced. That content was never
+# generated and does not exist in these files. Repair goes through the
+# English master, never this field. Do not re-harden translate_html.py
+# (CC-Translate, task #58); rebuilds are already safe.
+SIDECAR_TEXT_WARNING = (
+    "The sidecar text field is the contamination that was removed, not the "
+    "original it replaced. That content was never generated and does not "
+    "exist in these files. Repair goes through the English master, never "
+    "this field."
+)
+
 
 class ExtractionError(RuntimeError):
     pass
+
+
+def is_sidecar_contamination(path: Path) -> bool:
+    """True when this file's text field must not be used as English or as a translation.
+
+    Sidecar JSON stores the refusal/contamination that was stripped. The
+    original English was never written into that field and cannot be recovered
+    from it. HTML/EPUB/PDF masters are the files to scan instead.
+    """
+    name = path.name.lower()
+    suffix = path.suffix.lower()
+    if suffix == ".json":
+        return True
+    if "sidecar" in name or "refusal_text" in name or "fix_refusal" in name:
+        return True
+    if not path.is_file():
+        return False
+    payload = _json_object_prefix(path)
+    return isinstance(payload, dict) and "text" in payload
+
+
+def sidecar_skip_reason(path: Path) -> str | None:
+    if is_sidecar_contamination(path):
+        return SIDECAR_TEXT_WARNING
+    return None
 
 
 def looks_like_pdf(path: Path) -> bool:
@@ -37,11 +75,24 @@ def header_kind(path: Path) -> str:
         return "unreadable"
     if head.startswith(b"%PDF"):
         return "pdf"
-    if head.lstrip().startswith(b"<?xml") or head.lstrip().startswith(b"<"):
+    stripped = head.lstrip()
+    if stripped.startswith(b"{") or stripped.startswith(b"["):
+        return "json"
+    if stripped.startswith(b"<?xml") or stripped.startswith(b"<"):
         return "xml"
     if head.startswith(b"PK"):
         return "zip"
     return "other"
+
+
+def looks_like_html(path: Path) -> bool:
+    suffix = path.suffix.lower()
+    if suffix not in {".html", ".htm", ".xhtml"}:
+        return False
+    if is_sidecar_contamination(path):
+        return False
+    kind = header_kind(path)
+    return kind in {"xml", "other"}
 
 
 def looks_like_epub(path: Path) -> bool:
@@ -121,6 +172,12 @@ def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 
     try:
         if not path.is_file():
             return ""
+        if is_sidecar_contamination(path):
+            return ""
+        if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
+            if not looks_like_html(path):
+                return ""
+            return extract_html(path).text[:4000]
         if path.suffix.lower() == ".txt":
             return read_text_lenient(path, limit=4000)
         if path.suffix.lower() == ".epub":
@@ -228,12 +285,66 @@ def _html_to_text(markup: str) -> str:
     return _normalize_extracted(text)
 
 
+def extract_html(path: Path, language: str = "und") -> Document:
+    """Pull text from a bookstore HTML master (admin/translations/private)."""
+    if not path.is_file():
+        raise ExtractionError(f"HTML not found: {path}")
+    if is_sidecar_contamination(path):
+        raise ExtractionError(f"{SIDECAR_TEXT_WARNING} File: {path}")
+    if not looks_like_html(path):
+        raise ExtractionError(f"Not HTML ({header_kind(path)} header): {path}")
+    raw = read_text_lenient(path)
+    text = _html_to_text(raw)
+    if not text.strip():
+        raise ExtractionError(f"No extractable text in {path}")
+    paragraphs = [part.strip() for part in text.split("\n\n") if part.strip()]
+    return Document(
+        path=path,
+        text=text,
+        pages=paragraphs or [text],
+        language=language,
+        title=path.stem,
+    )
+
+
 def extract_plain(path: Path, language: str = "und") -> Document:
+    if is_sidecar_contamination(path):
+        raise ExtractionError(f"{SIDECAR_TEXT_WARNING} File: {path}")
     text = read_text_lenient(path)
     if not text.strip():
         raise ExtractionError(f"No extractable text in {path}")
     paragraphs = [part.strip() for part in text.split("\n\n") if part.strip()]
     return Document(path=path, text=text, pages=paragraphs or [text], language=language, title=path.stem)
+
+
+def _json_object_prefix(path: Path) -> object | None:
+    """Parse a JSON object from the start of a file, or None if it is not JSON."""
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(8192)
+    except OSError:
+        return None
+    stripped = head.lstrip()
+    if not stripped.startswith(b"{") and not stripped.startswith(b"["):
+        return None
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    if len(data) > 2_000_000:
+        data = data[:2_000_000]
+    for encoding in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            text = data.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return None
 
 
 def read_text_lenient(path: Path, limit: int | None = None) -> str:

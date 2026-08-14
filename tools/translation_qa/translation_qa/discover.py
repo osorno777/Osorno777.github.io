@@ -8,7 +8,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from translation_qa.catalog import BOOKS, BOOKS_BY_ID, FOREIGN_TITLE_ALIASES, NUMBERED_STEMS, SHORT_CODES
-from translation_qa.extract import extract_sample, header_kind, looks_like_epub, looks_like_pdf
+from translation_qa.extract import (
+    SIDECAR_TEXT_WARNING,
+    extract_sample,
+    header_kind,
+    is_sidecar_contamination,
+    looks_like_epub,
+    looks_like_html,
+    looks_like_pdf,
+)
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
 from translation_qa.textnorm import fold, isbn_digits
 
@@ -22,7 +30,12 @@ _SKIP_NAME_MARKERS = (
     "nohyph",
     "silence_log",
     "objecterror",
+    "sidecar",
+    "refusal_text",
+    "fix_refusal",
 )
+
+_BOOK_SUFFIXES = {".pdf", ".txt", ".epub", ".html", ".htm", ".xhtml"}
 
 _SKIP_PATH_MARKERS = (
     "_freedom_data",
@@ -203,7 +216,7 @@ def collect_pdfs(folders: list[Path]) -> list[Path]:
                 continue
             for name in filenames:
                 path = Path(root) / name
-                if path.suffix.lower() not in {".pdf", ".txt", ".epub"}:
+                if path.suffix.lower() not in _BOOK_SUFFIXES:
                     continue
                 if _skip_path(path):
                     continue
@@ -235,6 +248,8 @@ def select_english_sources(config: dict) -> list[Path]:
     by_id = dict(ranked)
     for path in explicit:
         if not path:
+            continue
+        if is_sidecar_contamination(path) or _should_skip(path):
             continue
         book_id = catalog_book_id(path) or infer_book_id(path)
         if book_id:
@@ -431,10 +446,14 @@ def _skip_reason(
 ) -> str:
     if _skip_path(path):
         return "skipped junk folder"
+    if is_sidecar_contamination(path):
+        return SIDECAR_TEXT_WARNING
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
         return f"not a PDF ({header_kind(path)} header)"
     if path.suffix.lower() == ".epub" and path.is_file() and not looks_like_epub(path):
         return f"not an EPUB ({header_kind(path)} header)"
+    if path.suffix.lower() in {".html", ".htm", ".xhtml"} and path.is_file() and not looks_like_html(path):
+        return f"not HTML ({header_kind(path)} header)"
     if _should_skip(path):
         return "skipped DO-NOT-USE/BIODUP"
     language = infer_language(path, passwords=passwords, peek=bool(passwords is not None))
@@ -520,6 +539,8 @@ def _prefer_ebook_pairs(pairs: list[BookPair]) -> list[BookPair]:
 
 def _translation_format(path: Path) -> str:
     suffix = path.suffix.lower().lstrip(".")
+    if suffix in {"html", "htm", "xhtml"}:
+        return "html"
     if suffix in {"epub", "pdf", "txt"}:
         return suffix
     return suffix or "other"
@@ -599,6 +620,10 @@ def _english_rank(path: Path) -> int:
         score -= 40
     if path.suffix.lower() == ".txt":
         score -= 30
+    if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
+        score += 6
+    if "translations/private" in blob:
+        score += 10
     if "dustjacket" in name or "postcard" in name:
         score -= 50
     if any(word in name for word in ("lecture", "outline", "overview", "observaciones")):
@@ -622,6 +647,10 @@ def _translation_rank(path: Path) -> int:
         score -= 40
     if path.suffix.lower() == ".txt":
         score -= 30
+    if path.suffix.lower() in {".html", ".htm", ".xhtml"}:
+        score += 18
+    if "translations/private" in blob:
+        score += 20
     return score
 
 
@@ -631,9 +660,13 @@ def _should_skip(path: Path) -> bool:
         return True
     if _skip_path(path):
         return True
+    if is_sidecar_contamination(path):
+        return True
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
         return True
     if path.suffix.lower() == ".epub" and path.is_file() and not looks_like_epub(path):
+        return True
+    if path.suffix.lower() in {".html", ".htm", ".xhtml"} and path.is_file() and not looks_like_html(path):
         return True
     return False
 

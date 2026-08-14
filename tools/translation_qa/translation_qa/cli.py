@@ -189,7 +189,8 @@ def _print_inventory(config: dict, output_dir: Path, passwords: list[str]) -> in
         f"{sum(1 for row in rows if row['role']=='translation')} paired, "
         f"{sum(1 for row in rows if row['role']=='unmatched')} unmatched, "
         f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='epub')} epub pairs, "
-        f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='pdf')} pdf pairs"
+        f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='pdf')} pdf pairs, "
+        f"{sum(1 for row in rows if row['role']=='translation' and row.get('format')=='html')} html pairs"
     )
     return 0
 

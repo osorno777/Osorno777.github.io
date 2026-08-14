@@ -20,7 +20,7 @@ cd tools\translation_qa
 
 `rescan.bat` lists every catalog PDF it can see, writes `reports\list.txt` and `reports\inventory.tsv`, then scans. It skips pairs that already have a report, so you can stop and rerun.
 
-If a scan is already printing the wrong book (for example Public Choice paired with Christian Theology of Public Policy), press Ctrl+C, `git pull` this branch, and run `.\rescan.bat` again.
+If a scan is already printing the **correct** 152-pair KDP PDF catalog, leave it running. Resume skips HTML reports already written. Only stop it if it is pairing the wrong books.
 
 If you do not have the clone yet:
 
@@ -55,7 +55,19 @@ The 20 Alertness Books store titles, including the five *Bearing the Cross* volu
 - Pro-Life Policy
 - Life in Chile
 
-English sources are the 20 catalog titles only. The Alertness Books store sells those 20 titles in **up to 40 languages** (not 20), including English. Not every book is translated into every language. The live store has about **537 non-English ebooks** plus 20 English ebooks (about 557 unique ebook ISBNs, the "about 550 products" figure) and about 67 audiobooks. Audiobooks are not scanned.
+English sources are the 20 catalog titles only. The Alertness Books store sells those 20 titles in **up to 40 languages** (not 20), including English. Not every book is translated into every language. The live store has about **537 non-English ebooks** plus 20 English ebooks (about 557 unique ebook ISBNs, the "about 550 products" figure) and about 67 audiobooks. Audiobooks are not scanned. IngramSpark has no audiobook programme (print and ebook only), so an audiobook fulfilment route is inert there.
+
+## Bookstore relay (2026-08-13 13:30) -- checker implications only
+
+`bookstore/WORKORDERS_RELAY_20260813_1330.md` supersedes earlier bookstore-lane orders. That file is **not** in this GitHub Pages repo. This checker honors it as follows and does **not** duplicate those other lanes:
+
+- **Sidecar `text` field:** that field is the contamination that was removed, not the original it replaced. The original was never generated and does not exist in those files. Repair goes through the English master, never the sidecar. The checker refuses to read sidecar JSON / `text` as English or as a translation (`fix_refusal_text.py` already says the same in the bookstore clone).
+- **Pipeline is hardened:** CC-Translate landed it in `translate_html.py` (task #58), tested on the known-bad strings with zero false positives. Rebuilds are safe. Do not duplicate that work, and do not treat rebuilds as unsafe.
+- **Private HTML masters:** CC-AB-Store gates `/admin/translations/private/`. The checker now reads `.html` there as its own format, separate from KDP PDFs and store EPUBs. Copy those HTML files locally; do not copy sidecar JSON.
+- **Stand down (already sent):** Ingram cancellation for 19 live contaminated titles, and StreetLib 38-ISBN consolidation. This repo does not send those. CC-KDP only watches for the Ingram reply and confirms the 19 flip to Cancelled.
+- **Life in Chile consultation:** included when the buyer has paid the full price -- one full-list purchase, or paperback + ebook, or the audiobook. Added route, not an Ingram-only replacement. Same wording for every channel. Do not present the audiobook clause as something Ingram can fulfil.
+
+Run `.\find_claude_scanners.ps1` in a **second** PowerShell window to locate `WORKORDERS_RELAY_*.md`, `LIC_EN_metadata.md`, `translate_html.py`, `fix_refusal_text.py`, and `admin\translations\private` on this PC. Paste `reports\bookstore_clues.tsv` (paths only).
 
 ## Where the other ~385 translations live
 
@@ -67,7 +79,7 @@ They are **not** missing from the catalog. They are missing from `C:\Alertness A
 - Filenames on the server follow store slugs: `econ-nie_es.epub`, `btc-1_af.epub`, `vintage_bg_de.epub`
 - `download.php` is the customer download link; it needs a purchase token, so do not scrape it. Copy the files from the server account instead.
 
-On this Windows PC, first see whether the EPUBs are already here (the checker used to ignore `.epub`):
+On this Windows PC, first see whether the EPUBs and private HTML masters are already here (the checker used to ignore `.epub` and `.html`):
 
 ```powershell
 cd $HOME\Osorno777.github.io\tools\translation_qa
@@ -75,13 +87,13 @@ cd $HOME\Osorno777.github.io\tools\translation_qa
 .\find_claude_scanners.ps1
 ```
 
-`find_claude_scanners.ps1` looks in `C:\Alertness AI`, Writing, and `agent_workflows` for Claude-written `.py` scanners and copies folder-path clues into `reports\claude_path_clues.tsv`. Those scripts are not in this GitHub repo. Paste that TSV back into chat (paths only).
+`find_claude_scanners.ps1` looks in `C:\Alertness AI`, Writing, bookstore clones, and `agent_workflows` for Claude-written `.py` scanners and copies folder-path clues into `reports\claude_path_clues.tsv`. It also hunts `WORKORDERS_RELAY_*.md`, `LIC_EN_metadata.md`, `translate_html.py`, `fix_refusal_text.py`, and `admin\translations\private` into `reports\bookstore_clues.tsv`. Those scripts are not in this GitHub repo. Paste the TSVs back into chat (paths only).
 
-If the EPUB list is still small, open cPanel Terminal / SSH on the bookstore host and run `find_server_ebooks.sh`, or in File Manager open the AlertnessBooks `data` folder and zip the `.epub` files. Unpack them into `C:\Alertness AI\website books\store_epubs`, then `.\rescan.bat`.
+If the EPUB/HTML list is still small, open cPanel Terminal / SSH on the bookstore host and run `find_server_ebooks.sh`, or in File Manager open the AlertnessBooks `data` folder (EPUBs) and `admin/translations/private` (HTML masters) and zip those files. Unpack EPUBs into `C:\Alertness AI\website books\store_epubs`. Unpack HTML into a local `admin\translations\private` folder. **Do not copy sidecar JSON.** Then `.\rescan.bat`.
 
-The checker looks for English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books` (PDF, TXT, and EPUB). Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
+The checker looks for English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books` and from `admin/translations/private` when that folder exists (PDF, TXT, EPUB, and HTML). Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
 
-It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP PDFs when an ebook PDF for the same book and language exists. A KDP PDF and a store EPUB of the same language are **both scanned**; they can differ. It will not compare two English interiors of the same book.
+It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, sidecar JSON / sidecar `text` fields, and paperback KDP PDFs when an ebook PDF for the same book and language exists. A KDP PDF, a store EPUB, and a private HTML file of the same language are **all scanned**; they can differ. It will not compare two English interiors of the same book, and it will not treat a sidecar `text` field as the lost original.
 
 ## Install
 
