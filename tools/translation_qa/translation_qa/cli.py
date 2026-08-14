@@ -96,6 +96,15 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
         print(f"Found {len(pairs)} pair(s) to check.")
+        langs = sorted({pair.language for pair in pairs})
+        if langs == ["und"] or (pairs and all(pair.language in {"en", "und"} for pair in pairs)):
+            print(
+                "Those files look like English interiors, not translations. "
+                "git pull origin cursor/translation-veracity-checker-5bc6 and run: "
+                "py -m translation_qa list --config paths.json",
+                file=sys.stderr,
+            )
+            return 2
         worst = 0
         skipped = 0
         failed = 0
@@ -107,6 +116,13 @@ def main(argv: list[str] | None = None) -> int:
                 failed += 1
                 print(
                     f"[{index}/{len(pairs)}] skip unknown language (not clean): {pair.translated}",
+                    file=sys.stderr,
+                )
+                continue
+            if language == "en" or "interior" in pair.translated.name.lower() or "do-not-use" in pair.translated.name.lower():
+                failed += 1
+                print(
+                    f"[{index}/{len(pairs)}] skip English interior (not a translation): {pair.translated}",
                     file=sys.stderr,
                 )
                 continue

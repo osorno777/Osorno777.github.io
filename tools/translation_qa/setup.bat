@@ -19,8 +19,10 @@ if not exist paths.json copy /Y paths.example.json paths.json >nul
 echo.
 echo Next:
 echo   1. Edit .env and set PDF_PASSWORDS=...  (semicolon-separated, no quotes needed)
-echo   2. Confirm paths.json points at your English PDFs and C:\Alertness AI\website books
-echo   3. Trial run:
-echo        py -m translation_qa scan --config paths.json --max-sentences 25
+echo   2. git pull origin cursor/translation-veracity-checker-5bc6
+echo   3. py -m translation_qa list --config paths.json
+echo      The list must show language codes such as es, de, hi -- not und.
+echo      Do not scan English INTERIOR / DO-NOT-USE PDFs. Do not use --llm until list looks right.
+echo   4. Then: .\rescan.bat
 echo.
 exit /b 0

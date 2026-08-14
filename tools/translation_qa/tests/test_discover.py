@@ -83,6 +83,27 @@ def test_discover_skips_english_interiors_and_do_not_use(tmp_path):
     assert pairs[0].language == "es"
 
 
+def test_scan_refuses_english_interior_as_translation(tmp_path, capsys):
+    english = tmp_path / "Behind the Walls (2026).pdf"
+    interior = tmp_path / "Behind the Walls (2026) INTERIOR 396pp v3 FINAL-20260729.pdf"
+    english.write_bytes(b"%PDF")
+    interior.write_bytes(b"%PDF")
+    reports = tmp_path / "reports"
+    config_path = tmp_path / "paths.json"
+    config_path.write_text(
+        '{"english_sources": ["%s"], "translations_dir": "%s", "output_dir": "%s"}'
+        % (
+            str(english).replace("\\", "/"),
+            str(tmp_path).replace("\\", "/"),
+            str(reports).replace("\\", "/"),
+        ),
+        encoding="utf-8",
+    )
+    assert main(["scan", "--config", str(config_path)]) == 2
+    assert not list(reports.glob("*INTERIOR*"))
+    assert not list(reports.glob("*__und.html"))
+
+
 def test_discover_matches_spanish_title_alias(tmp_path):
     english = tmp_path / "Suffering Unjustly (2026).pdf"
     english.write_bytes(b"%PDF")

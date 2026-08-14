@@ -17,7 +17,7 @@ copy /Y paths.example.json paths.json >nul
 if not exist reports\old-english-interiors mkdir reports\old-english-interiors
 echo.
 echo --- Archiving leftover reports from the old wrong-book scan ---
-for %%F in (reports\*DO-NOT-USE*.html reports\*DO-NOT-USE*.csv reports\*DO-NOT-USE*.json reports\*__und.html reports\*__und.csv reports\*__und.json reports\christian-theology-of-public-policy__Public_Choice*.* reports\primer-on-modern-themes__Austrian*.* reports\life-in-chile__*surviving*.* reports\hong*icons*.*) do (
+for %%F in (reports\*DO-NOT-USE*.html reports\*DO-NOT-USE*.csv reports\*DO-NOT-USE*.json reports\*INTERIOR*.html reports\*INTERIOR*.csv reports\*INTERIOR*.json reports\*__und.html reports\*__und.csv reports\*__und.json reports\christian-theology-of-public-policy__Public_Choice*.* reports\primer-on-modern-themes__Austrian*.* reports\life-in-chile__*surviving*.* reports\hong*icons*.*) do (
   if exist "%%F" move /Y "%%F" reports\old-english-interiors\ >nul
 )
 echo Remaining HTML reports:

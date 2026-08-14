@@ -457,6 +457,9 @@ def _pair_for_file(
 
 
 def _is_translation_candidate(path: Path) -> bool:
+    name = path.name.lower()
+    if "interior" in name or "biodup" in name:
+        return False
     codes = [_normalize_lang_part(part) for part in _language_tag_parts(path)]
     if "en" in codes and not any(code and code != "en" for code in codes):
         return False
