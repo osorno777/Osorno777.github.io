@@ -310,6 +310,35 @@ SHORT_CODES = {
     "stf": "sentenced-to-the-future",
 }
 
+# Translated titles that may have no ISO language tag in the filename.
+# Keep this list ASCII so Windows Python can import the file.
+# Do not put English SKU aliases here (econ-aifinance, prolife policy, 01_).
+FOREIGN_TITLE_ALIASES: tuple[str, ...] = (
+    "padeciendo injustamente",
+    "padeciendo",
+    "detras de los muros",
+    "detras de las paredes",
+    "dietro i muri",
+    "derriere les murs",
+    "hinter den mauern",
+    "llevando la cruz",
+    "cargando la cruz",
+    "portant la croix",
+    "portando la croce",
+    "finanzas personales",
+    "defendiendo tu tesis",
+    "economia austriaca",
+    "eleccion publica",
+    "nueva economia institucional",
+    "sobreviviendo a la justicia chilena",
+    "condenado al futuro",
+    "biblia y gobierno",
+    "teologia cristiana",
+    "politica pro vida",
+    "vida en chile",
+    "la vida en chile",
+)
+
 # Numbered website-book stems (01_ / 03b_ / 05_). Longer prefixes must come first.
 NUMBERED_STEMS: tuple[tuple[str, str], ...] = (
     ("03b", "public-choice"),

@@ -7,7 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from translation_qa.catalog import BOOKS, BOOKS_BY_ID, NUMBERED_STEMS, SHORT_CODES
+from translation_qa.catalog import BOOKS, BOOKS_BY_ID, FOREIGN_TITLE_ALIASES, NUMBERED_STEMS, SHORT_CODES
 from translation_qa.extract import extract_sample, header_kind, looks_like_pdf
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
 from translation_qa.textnorm import fold, isbn_digits
@@ -45,11 +45,22 @@ _ENGLISH_MARKERS = (
     "(en)",
     "_en.",
     "_en_",
+    "_en ",
+    "_en(",
     "-en.",
     "-en-",
+    "-en ",
     " complete",
     "(complete)",
     "interior",
+)
+
+# ISO codes only count in filename language slots (_ES.pdf, _AF_2026, _en (1)),
+# not mid-title words such as life_in_chile or Sentenced_to_the_Future.
+_ISO_SLOT_RE = re.compile(
+    r"(?:^|[_\-.])(zh[-_](?:cn|tw|hk)|pt[-_]br|[a-z]{2,3})"
+    r"(?=_2026|-2026|_ebook|_paperback|\.[a-z]{3,4}$|[()\s])",
+    re.I,
 )
 
 
@@ -66,7 +77,9 @@ def load_config(path: Path) -> dict:
 
 
 def infer_language(path: Path, passwords: list[str] | None = None, *, peek: bool = False) -> str:
-    haystack = " ".join(_path_tokens(path))
+    # Filename + immediate parent only. Scanning every ancestor folder
+    # misfires when a pytest tmp dir or unrelated path contains "spanish".
+    haystack = _local_haystack(path)
     folded = fold(haystack)
     for name, code in sorted(NAME_TO_CODE.items(), key=lambda item: -len(item[0])):
         if name == "english" or len(name) < 4:
@@ -116,14 +129,13 @@ def _language_tag_parts(path: Path) -> list[str]:
     for compound in ("zh-hk", "zh_hk", "zh-cn", "zh_cn", "zh-tw", "zh_tw", "pt-br", "pt_br"):
         if compound in blob:
             tagged.append(compound)
-    tagged.extend(re.findall(r"(?:^|[_\-.])([a-z]{2,3})(?=[_\-.]|\.[a-z]{3,4}$)", blob))
+    tagged.extend(part.lower().replace("_", "-") for part in _ISO_SLOT_RE.findall(blob))
     tagged.extend(re.findall(r"\(([a-z]{2,3})\)", blob))
-    for parent in path.parents:
-        name = parent.name.lower().strip()
-        if re.fullmatch(r"[a-z]{2,3}", name) or name in LANGUAGE_NAMES or name in NAME_TO_CODE:
-            tagged.append(NAME_TO_CODE.get(name, name))
-        if name in {"zh-cn", "zh_cn", "zh-tw", "zh_tw", "zh-hk", "zh_hk", "pt-br", "pt_br"}:
-            tagged.append(name)
+    name = path.parent.name.lower().strip()
+    if re.fullmatch(r"[a-z]{2,3}", name) or name in LANGUAGE_NAMES or name in NAME_TO_CODE:
+        tagged.append(NAME_TO_CODE.get(name, name))
+    if name in {"zh-cn", "zh_cn", "zh-tw", "zh_tw", "zh-hk", "zh_hk", "pt-br", "pt_br"}:
+        tagged.append(name)
     return tagged
 
 
@@ -212,7 +224,7 @@ def select_english_sources(config: dict) -> list[Path]:
         book_id = catalog_book_id(path)
         if not book_id:
             continue
-        if _has_non_english_language_tag(path) and not _looks_english(path):
+        if _foreign_title_alias(path) or _has_non_english_language_tag(path):
             continue
         language = infer_language(path)
         if language not in {"en", "und"}:
@@ -399,6 +411,9 @@ def _pair_for_file(
 
 
 def _is_translation_candidate(path: Path) -> bool:
+    codes = [_normalize_lang_part(part) for part in _language_tag_parts(path)]
+    if "en" in codes and not any(code and code != "en" for code in codes):
+        return False
     if _has_non_english_language_tag(path):
         return True
     if _foreign_title_alias(path):
@@ -432,6 +447,10 @@ def _skip_reason(
         return "English interior/filename without a language tag"
     if not _match_book_id(path, english_by_id):
         return "no matching English title"
+    if book_id:
+        for pair in pairs:
+            if pair.book_id == book_id and pair.language == language:
+                return "duplicate; another file already paired for this language"
     return "already paired or same file"
 
 
@@ -484,10 +503,8 @@ def _prefer_ebook_pairs(pairs: list[BookPair]) -> list[BookPair]:
     return list(best.values())
 
 
-def _path_tokens(path: Path) -> list[str]:
-    parts = [path.stem.lower()]
-    parts.extend(parent.name.lower() for parent in path.parents if parent.name)
-    return parts
+def _local_haystack(path: Path) -> str:
+    return f"{path.stem} {path.parent.name}".lower()
 
 
 def _has_non_english_language_tag(path: Path) -> bool:
@@ -510,18 +527,7 @@ def _has_non_english_language_tag(path: Path) -> bool:
 
 def _foreign_title_alias(path: Path) -> bool:
     stem = fold(path.stem)
-    book_id = catalog_book_id(path)
-    if not book_id:
-        return False
-    book = BOOKS_BY_ID[book_id]
-    title_fold = fold(book.title)
-    for alias in book.aliases:
-        alias_fold = fold(alias)
-        if len(alias_fold) < 6:
-            continue
-        if alias_fold in stem and alias_fold not in title_fold:
-            return True
-    return False
+    return any(fold(alias) in stem for alias in FOREIGN_TITLE_ALIASES if len(fold(alias)) >= 6)
 
 
 def _looks_english(path: Path) -> bool:
@@ -573,6 +579,10 @@ def _english_rank(path: Path) -> int:
         score -= 30
     if "dustjacket" in name or "postcard" in name:
         score -= 50
+    if any(word in name for word in ("lecture", "outline", "overview", "observaciones")):
+        score -= 40
+    if _foreign_title_alias(path):
+        score -= 80
     return score
 
 

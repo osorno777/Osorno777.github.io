@@ -486,3 +486,75 @@ def test_prolife_english_pdf_is_not_a_translation(tmp_path):
         }
     )
     assert any(path.name == "prolife_policy.pdf" for path, _reason in leftover)
+
+
+def test_unlabeled_prolife_copy_is_not_paired_when_english_is_elsewhere(tmp_path):
+    ebooks = tmp_path / "ebooks"
+    website = tmp_path / "website"
+    ebooks.mkdir()
+    website.mkdir()
+    (ebooks / "Prolife Policy A Perspective for Liberty and Human Rights.pdf").write_bytes(b"%PDF")
+    (website / "prolife_policy.pdf").write_bytes(b"%PDF")
+    (website / "prolife_policy_es.pdf").write_bytes(b"%PDF")
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(ebooks), str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert [(pair.book_id, pair.language) for pair in pairs] == [("pro-life-policy", "es")]
+
+
+def test_econ_aifinance_en_copy_is_not_a_translation(tmp_path):
+    website = tmp_path / "website"
+    kdp = website / "PDF" / "kdp_by_isbn"
+    kdp.mkdir(parents=True)
+    (kdp / "AI_Augmented_Personal_Finance_EN_2026_ebook.pdf").write_bytes(b"%PDF")
+    purchased = website / "AI Aug PF purchased"
+    purchased.mkdir()
+    (purchased / "AlertnessBooks_econ-aifinance_en (1).pdf").write_bytes(b"%PDF")
+    (kdp / "AI_Augmented_Personal_Finance_ES_2026_ebook.pdf").write_bytes(b"%PDF")
+    assert infer_language(purchased / "AlertnessBooks_econ-aifinance_en (1).pdf") == "en"
+    pairs = discover_pairs(
+        {
+            "english_dirs": [str(website)],
+            "translations_dir": str(website),
+            "peek_language": False,
+        }
+    )
+    assert [(pair.book_id, pair.language) for pair in pairs] == [("ai-augmented-personal-finance", "es")]
+
+
+def test_vida_en_chile_pdf_is_not_english_source(tmp_path):
+    ebooks = tmp_path / "ebooks"
+    website = tmp_path / "website"
+    ebooks.mkdir()
+    website.mkdir()
+    (ebooks / "La Vida en Chile Observaciones de una Academico Norteamericano Expatriado.pdf").write_bytes(b"%PDF")
+    (website / "life_in_chile.pdf").write_bytes(b"%PDF")
+    sources = select_english_sources({"english_dirs": [str(ebooks), str(website)]})
+    names = [path.name for path in sources]
+    assert "life_in_chile.pdf" in names
+    assert not any("Vida en Chile" in name for name in names)
+
+
+def test_life_in_chile_filename_is_english_even_under_spanish_folder(tmp_path):
+    nested = tmp_path / "spanish_notes" / "website"
+    nested.mkdir(parents=True)
+    path = nested / "life_in_chile.pdf"
+    path.write_bytes(b"%PDF")
+    assert infer_language(path) == "en"
+    assert infer_language(Path("life_in_chile.pdf")) == "en"
+    assert infer_language(Path("AlertnessBooks_econ-aifinance_en (1).pdf")) == "en"
+
+
+def test_lecture_outline_loses_to_full_allodial_book(tmp_path):
+    ebooks = tmp_path / "ebooks"
+    ebooks.mkdir()
+    (ebooks / "Allodial Policy Overview Lecture Outline.pdf").write_bytes(b"%PDF")
+    (ebooks / "Building Regulation Market Alternatives and Allodial Policy.pdf").write_bytes(b"%PDF")
+    sources = select_english_sources({"english_dirs": [str(ebooks)]})
+    assert [path.name for path in sources] == [
+        "Building Regulation Market Alternatives and Allodial Policy.pdf"
+    ]
