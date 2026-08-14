@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from translation_qa.catalog import BOOKS, BOOKS_BY_ID, FOREIGN_TITLE_ALIASES, NUMBERED_STEMS, SHORT_CODES
-from translation_qa.extract import extract_sample, header_kind, looks_like_pdf
+from translation_qa.extract import extract_sample, header_kind, looks_like_epub, looks_like_pdf
 from translation_qa.languages import LANGUAGE_NAMES, NAME_TO_CODE, detect_language_from_text
 from translation_qa.textnorm import fold, isbn_digits
 
@@ -203,7 +203,7 @@ def collect_pdfs(folders: list[Path]) -> list[Path]:
                 continue
             for name in filenames:
                 path = Path(root) / name
-                if path.suffix.lower() not in {".pdf", ".txt"}:
+                if path.suffix.lower() not in {".pdf", ".txt", ".epub"}:
                     continue
                 if _skip_path(path):
                     continue
@@ -431,6 +431,8 @@ def _skip_reason(
         return "skipped junk folder"
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
         return f"not a PDF ({header_kind(path)} header)"
+    if path.suffix.lower() == ".epub" and path.is_file() and not looks_like_epub(path):
+        return f"not an EPUB ({header_kind(path)} header)"
     if _should_skip(path):
         return "skipped DO-NOT-USE/BIODUP"
     language = infer_language(path, passwords=passwords, peek=bool(passwords is not None))
@@ -610,6 +612,8 @@ def _should_skip(path: Path) -> bool:
     if _skip_path(path):
         return True
     if path.suffix.lower() == ".pdf" and path.is_file() and not looks_like_pdf(path):
+        return True
+    if path.suffix.lower() == ".epub" and path.is_file() and not looks_like_epub(path):
         return True
     return False
 

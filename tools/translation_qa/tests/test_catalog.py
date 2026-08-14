@@ -76,3 +76,5 @@ def test_store_slugs_resolve():
     assert catalog_book_id(Path("econ-survivingcj_yo.pdf")) == "surviving-chilean-justice"
     assert catalog_book_id(Path("econ-nie_am.pdf")) == "new-institutional-economics"
     assert catalog_book_id(Path("btc-1_af.pdf")) == "bearing-the-cross-1"
+    assert catalog_book_id(Path("econ-nie_es.epub")) == "new-institutional-economics"
+    assert catalog_book_id(Path("btc-3_quh.epub")) == "bearing-the-cross-3"

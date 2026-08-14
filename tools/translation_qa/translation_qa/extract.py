@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
+import re
+import zipfile
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 from translation_qa.models import Document
 from translation_qa.passwords import load_pdf_passwords
@@ -39,6 +42,17 @@ def header_kind(path: Path) -> str:
     if head.startswith(b"PK"):
         return "zip"
     return "other"
+
+
+def looks_like_epub(path: Path) -> bool:
+    if path.suffix.lower() != ".epub":
+        return False
+    try:
+        with zipfile.ZipFile(path) as archive:
+            kind = archive.read("mimetype").decode("ascii", "ignore").strip()
+        return kind.startswith("application/epub")
+    except Exception:
+        return False
 
 
 def extract_pdf(path: Path, passwords: list[str] | None = None) -> Document:
@@ -109,6 +123,10 @@ def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 
             return ""
         if path.suffix.lower() == ".txt":
             return read_text_lenient(path, limit=4000)
+        if path.suffix.lower() == ".epub":
+            if not looks_like_epub(path):
+                return ""
+            return extract_epub(path).text[:4000]
         if path.suffix.lower() != ".pdf" or not looks_like_pdf(path):
             return ""
         from pypdf import PdfReader
@@ -134,6 +152,80 @@ def extract_sample(path: Path, passwords: list[str] | None = None, pages: int = 
         return "\n".join(chunk for chunk in chunks if chunk.strip())
     except Exception:
         return ""
+
+
+def extract_epub(path: Path, language: str = "und") -> Document:
+    """Pull text from an EPUB (the format the Alertness Books reader serves)."""
+    if not path.is_file():
+        raise ExtractionError(f"EPUB not found: {path}")
+    if not looks_like_epub(path):
+        raise ExtractionError(f"Not an EPUB ({header_kind(path)} header): {path}")
+    try:
+        with zipfile.ZipFile(path) as archive:
+            rootfile = _epub_rootfile(archive)
+            hrefs = _epub_spine_hrefs(archive, rootfile)
+            pages: list[str] = []
+            for href in hrefs:
+                try:
+                    raw = archive.read(href)
+                except KeyError:
+                    continue
+                pages.append(_html_to_text(raw.decode("utf-8", "ignore")))
+    except zipfile.BadZipFile as exc:
+        raise ExtractionError(f"Not an EPUB zip: {path}") from exc
+    body = "\n\n".join(page for page in pages if page.strip())
+    if not body.strip():
+        raise ExtractionError(f"No extractable text in {path}")
+    return Document(path=path, text=body, pages=pages, language=language, title=path.stem)
+
+
+def _epub_rootfile(archive: zipfile.ZipFile) -> str:
+    xml = ET.fromstring(archive.read("META-INF/container.xml"))
+    ns = {"c": "urn:oasis:names:tc:opendocument:xmlns:container"}
+    node = xml.find(".//c:rootfile", ns)
+    if node is None:
+        node = xml.find(".//{urn:oasis:names:tc:opendocument:xmlns:container}rootfile")
+    href = node.get("full-path") if node is not None else None
+    if not href:
+        raise ExtractionError("EPUB container.xml has no rootfile")
+    return href
+
+
+def _epub_spine_hrefs(archive: zipfile.ZipFile, rootfile: str) -> list[str]:
+    opf = ET.fromstring(archive.read(rootfile))
+    ns = {"p": "http://www.idpf.org/2007/opf"}
+    manifest = {
+        item.get("id"): item.get("href")
+        for item in opf.findall(".//{http://www.idpf.org/2007/opf}item")
+        + opf.findall(".//p:item", ns)
+        if item.get("id") and item.get("href")
+    }
+    refs = opf.findall(".//{http://www.idpf.org/2007/opf}itemref") + opf.findall(".//p:itemref", ns)
+    base = str(Path(rootfile).parent).replace("\\", "/").rstrip(".")
+    hrefs: list[str] = []
+    seen: set[str] = set()
+    for ref in refs:
+        href = manifest.get(ref.get("idref") or "")
+        if not href:
+            continue
+        if base and base not in {".", ""}:
+            joined = f"{base}/{href}".replace("//", "/")
+        else:
+            joined = href
+        if joined not in seen:
+            seen.add(joined)
+            hrefs.append(joined)
+    return hrefs
+
+
+def _html_to_text(markup: str) -> str:
+    text = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", markup)
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</p>", "\n\n", text)
+    text = re.sub(r"(?i)</h[1-6]>", "\n\n", text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+    return _normalize_extracted(text)
 
 
 def extract_plain(path: Path, language: str = "und") -> Document:

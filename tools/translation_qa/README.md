@@ -55,9 +55,28 @@ The 20 Alertness Books store titles, including the five *Bearing the Cross* volu
 - Pro-Life Policy
 - Life in Chile
 
-English sources are the 20 catalog titles only. The Alertness Books store sells those 20 titles in **up to 40 languages** (not 20), including English. Not every book is translated into every language. The live store has about **537 non-English ebooks** plus 20 English ebooks (about 557 unique ebook ISBNs, the "about 550 products" figure) and about 67 audiobooks. Audiobooks are not scanned. The checker only pairs PDF/TXT files it can see under the configured folders; a 152-pair inventory means the other store translations are not in `website books` as language-tagged PDFs yet.
+English sources are the 20 catalog titles only. The Alertness Books store sells those 20 titles in **up to 40 languages** (not 20), including English. Not every book is translated into every language. The live store has about **537 non-English ebooks** plus 20 English ebooks (about 557 unique ebook ISBNs, the "about 550 products" figure) and about 67 audiobooks. Audiobooks are not scanned.
 
-The checker looks for those English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books`. Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
+## Where the other ~385 translations live
+
+They are **not** missing from the catalog. They are missing from `C:\Alertness AI\website books` as language-tagged PDFs. The bookstore reader serves **EPUB** files from the Alertness Books server:
+
+- Public site: https://alertnessbooks.com/ (same files as https://alertnessai.com/AlertnessBooks/)
+- Protected dirs (Apache 403): `/data/` (ebook files), `/lib/` (`epub.js`, `lib_ui.php`), `/reader/` (sign-in at `/reader/library.php`)
+- Public covers prove each language edition exists: `/assets/covers/thumb/{slug}_{lang}.jpg` (for example `econ-nie_es.jpg`, `btc-1_es.jpg`)
+- Filenames on the server follow store slugs: `econ-nie_es.epub`, `btc-1_af.epub`, `vintage_bg_de.epub`
+- `download.php` is the customer download link; it needs a purchase token, so do not scrape it. Copy the files from the server account instead.
+
+On this Windows PC, first see whether the EPUBs are already here (the checker used to ignore `.epub`):
+
+```powershell
+cd $HOME\Osorno777.github.io\tools\translation_qa
+.\find_local_translations.ps1
+```
+
+If that list is still small, open cPanel Terminal / SSH on the bookstore host and run `find_server_ebooks.sh`, or in File Manager open the AlertnessBooks `data` folder and zip the `.epub` files. Unpack them into `C:\Alertness AI\website books\store_epubs`, then `.\rescan.bat`.
+
+The checker looks for English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books` (PDF, TXT, and EPUB). Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
 
 It skips Sims logs, `_freedom_data`, nohyph backups, audiobook silence logs, `DO-NOT-USE` / `BIODUP` files, and paperback KDP files when an ebook for the same book and language exists. It will not compare two English interiors of the same book.
 

@@ -9,7 +9,7 @@ from translation_qa.checks.refusals import check_refusals
 from translation_qa.checks.residual_english import check_residual_english
 from translation_qa.checks.structure import check_structure
 from translation_qa.checks.word_coverage import check_word_coverage
-from translation_qa.extract import extract_pdf, extract_plain
+from translation_qa.extract import extract_epub, extract_pdf, extract_plain
 from translation_qa.models import AuditResult, Document, Finding, Severity
 from translation_qa.passwords import load_pdf_passwords
 from translation_qa.segment import content_words
@@ -18,6 +18,8 @@ from translation_qa.segment import content_words
 def load_document(path: Path, language: str, passwords: list[str] | None = None) -> Document:
     if path.suffix.lower() == ".pdf":
         document = extract_pdf(path, passwords=passwords)
+    elif path.suffix.lower() == ".epub":
+        document = extract_epub(path, language=language)
     else:
         document = extract_plain(path, language=language)
     document.language = language
