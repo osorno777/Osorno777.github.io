@@ -72,9 +72,12 @@ On this Windows PC, first see whether the EPUBs are already here (the checker us
 ```powershell
 cd $HOME\Osorno777.github.io\tools\translation_qa
 .\find_local_translations.ps1
+.\find_claude_scanners.ps1
 ```
 
-If that list is still small, open cPanel Terminal / SSH on the bookstore host and run `find_server_ebooks.sh`, or in File Manager open the AlertnessBooks `data` folder and zip the `.epub` files. Unpack them into `C:\Alertness AI\website books\store_epubs`, then `.\rescan.bat`.
+`find_claude_scanners.ps1` looks in `C:\Alertness AI`, Writing, and `agent_workflows` for Claude-written `.py` scanners and copies folder-path clues into `reports\claude_path_clues.tsv`. Those scripts are not in this GitHub repo. Paste that TSV back into chat (paths only).
+
+If the EPUB list is still small, open cPanel Terminal / SSH on the bookstore host and run `find_server_ebooks.sh`, or in File Manager open the AlertnessBooks `data` folder and zip the `.epub` files. Unpack them into `C:\Alertness AI\website books\store_epubs`, then `.\rescan.bat`.
 
 The checker looks for English PDFs in the Writing folders *and* in `C:\Alertness AI\website books` (`01_*.pdf`, `*_EN_*_ebook_*.pdf`). Translations are walked from `C:\Alertness AI\website books` (PDF, TXT, and EPUB). Pairing uses ISBNs, numbered stems (`01_` through `05_`), store slugs (`vintage_bg`, `econ-nie`, `btc-1`), catalog aliases (including accented Spanish titles), language folders (`Spanish`, `Amharic`, `es`), and filename tags (`_es`, `_ZH-HK`, `(French)`). It does not fuzzy-match shared words such as "primer", "chile", or "public policy" across different catalog books.
 
