@@ -16,7 +16,13 @@ from translation_qa.extract import ExtractionError
 from translation_qa.offload import drive_root, offload_work_to_drive
 from translation_qa.passwords import load_dotenv, load_pdf_passwords
 from translation_qa.pipeline import audit_files
-from translation_qa.report import DiskFullError, compact_existing_reports, write_reports
+from translation_qa.report import (
+    DiskFullError,
+    compact_existing_reports,
+    summarize_reports,
+    write_reports,
+    write_summary_tsv,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -59,11 +65,17 @@ def main(argv: list[str] | None = None) -> int:
     inventory = sub.add_parser("inventory", help="Dump every PDF found (English, paired, unmatched).")
     inventory.add_argument("--config", required=True, type=Path)
 
+    summarize = sub.add_parser(
+        "summarize",
+        help="Roll up HTML reports into one TSV (critical / refusal / defect counts).",
+    )
+    summarize.add_argument("--output", type=Path, default=Path("reports"))
+
     args = parser.parse_args(argv)
     output_dir: Path = getattr(args, "output", Path("reports"))
     passwords = load_pdf_passwords()
 
-    if args.command not in {"list", "inventory", "compact-reports", "use-drive"} and not passwords:
+    if args.command not in {"list", "inventory", "compact-reports", "use-drive", "summarize"} and not passwords:
         print(
             "No PDF_PASSWORDS set. Encrypted PDFs will fail. "
             "Copy .env.example to .env and add semicolon-separated passwords.",
@@ -114,6 +126,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Reports: {result['reports']}")
             print(f"Temp: {result['tmp']}")
             print(f"Moved {result['moved']} file(s) off the repo drive.")
+            return 0
+
+        if args.command == "summarize":
+            rows = summarize_reports(output_dir)
+            path = write_summary_tsv(output_dir, rows)
+            refusals = sum(int(row.get("refusal") or 0) for row in rows)
+            critical = sum(int(row.get("critical") or 0) for row in rows)
+            print(f"Reports rolled up: {len(rows)}")
+            print(f"Pairs with refusals: {sum(1 for row in rows if int(row.get('refusal') or 0) > 0)}")
+            print(f"Pairs with critical: {sum(1 for row in rows if int(row.get('critical') or 0) > 0)}")
+            print(f"Total refusals: {refusals}")
+            print(f"Total critical: {critical}")
+            print(f"Wrote {path}")
+            print("Open the TSV; sort by refusal then critical. Do not paste PDF or HTML interiors.")
             return 0
 
         config = load_config(args.config)

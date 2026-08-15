@@ -20,6 +20,7 @@ Read values from `.env` in this folder. Do not print them. Do not commit them.
 - Output: `E:\translation_qa\reports`
 - Resume skip: existing `*.html` reports
 - Tests: `py -m pytest` from this folder
+- After a finished scan: `py -m translation_qa summarize --output E:\translation_qa\reports`
 
 ## Pairing
 

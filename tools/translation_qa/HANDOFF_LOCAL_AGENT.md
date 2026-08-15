@@ -27,6 +27,7 @@ If `.env` is missing, tell John to copy `.env.example` to `.env` and fill it. Do
 
 - One 1034-pair catalog scan via `.\rescan.bat`. Leave it. No second window. No `--llm`.
 - Reports/temp on `E:\translation_qa`. Resume skips HTML already written.
+- After the 1034-pair scan finishes: `py -m translation_qa summarize --output E:\translation_qa\reports` then open `summary.tsv`. Do not `--force`. Do not start a second scan.
 - Checker only reports. Repair goes through the English master, never sidecar `text`.
 
 ## Live bookstore (paths only)

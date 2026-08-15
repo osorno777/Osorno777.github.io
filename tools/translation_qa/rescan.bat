@@ -86,8 +86,12 @@ echo Reports and temp: %QA_REPORTS%
 py -m translation_qa scan --config paths.json
 echo.
 echo Reports: %QA_REPORTS%
-echo If the pair count is still too low, paste E:\translation_qa\reports\list.txt
-echo and E:\translation_qa\reports\inventory.tsv into the Cursor chat (filenames only).
+echo.
+echo --- Catalog rollup (critical / refusal / defect counts) ---
+py -m translation_qa summarize --output "%QA_REPORTS%"
+echo.
+echo Catalog scan finished. Press a key, then open E:\translation_qa\reports\summary.tsv
+echo Paste only summary.tsv into Cursor if you want a triage list (no PDF/HTML interiors).
 echo.
 pause
 exit /b %ERRORLEVEL%

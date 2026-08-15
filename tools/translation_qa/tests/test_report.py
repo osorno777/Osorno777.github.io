@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from translation_qa.models import AuditResult, Finding, Severity
-from translation_qa.report import compact_existing_reports, write_reports
+from translation_qa.report import compact_existing_reports, summarize_reports, write_reports, write_summary_tsv
 
 
 def _result(n_defects: int = 20) -> AuditResult:
@@ -92,3 +92,19 @@ def test_compact_existing_deletes_json_csv_and_shrinks_html(tmp_path: Path):
     assert (tmp_path / "old.html").exists()
     assert stats["shrunk_html"] == 1
     assert (tmp_path / "old.html").stat().st_size < html_before
+
+
+def test_summarize_reads_html_after_json_deleted(tmp_path: Path):
+    write_reports(_result(12), tmp_path, "bearing-the-cross-3__btc-3_da__da")
+    (tmp_path / "bearing-the-cross-3__btc-3_da__da.json").unlink()
+    rows = summarize_reports(tmp_path)
+    assert len(rows) == 1
+    assert rows[0]["book_id"] == "bearing-the-cross-3"
+    assert rows[0]["language"] == "es"
+    assert rows[0]["critical"] == 1
+    assert rows[0]["refusal"] == 1
+    assert rows[0]["defect"] == 12
+    path = write_summary_tsv(tmp_path, rows)
+    text = path.read_text(encoding="utf-8")
+    assert "bearing-the-cross-3" in text
+    assert "\tes\t" in text

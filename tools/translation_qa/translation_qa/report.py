@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import errno
 import json
+import re
 from collections import Counter
 from html import escape
 from pathlib import Path
@@ -295,3 +296,90 @@ def _shrink_existing_html(text: str) -> str:
         )
         result = result.replace("<body>", "<body>\n" + note, 1)
     return result
+
+
+def summarize_reports(output_dir: Path) -> list[dict[str, str | int]]:
+    """Roll up compact HTML/JSON reports into one table. Skips list.txt and junk archives."""
+    rows: list[dict[str, str | int]] = []
+    skip_dirs = {"old-english-interiors"}
+    html_files = sorted(
+        path
+        for path in output_dir.glob("*.html")
+        if path.parent.name not in skip_dirs and path.name.lower() != "index.html"
+    )
+    for html_path in html_files:
+        json_path = html_path.with_suffix(".json")
+        parsed = _parse_json_summary(json_path) if json_path.exists() else None
+        if parsed is None:
+            parsed = _parse_html_summary(html_path)
+        if parsed is None:
+            continue
+        stem = html_path.stem
+        parts = stem.split("__")
+        parsed.setdefault("book_id", parts[0] if parts else stem)
+        parsed.setdefault("language", parts[-1] if len(parts) > 1 else "")
+        parsed["report"] = html_path.name
+        rows.append(parsed)
+    rows.sort(
+        key=lambda row: (
+            -int(row.get("refusal", 0) or 0),
+            -int(row.get("critical", 0) or 0),
+            -int(row.get("defect", 0) or 0),
+            str(row.get("book_id", "")),
+            str(row.get("language", "")),
+        )
+    )
+    return rows
+
+
+def write_summary_tsv(output_dir: Path, rows: list[dict[str, str | int]]) -> Path:
+    path = output_dir / "summary.tsv"
+    fields = ["book_id", "language", "critical", "refusal", "defect", "warning", "sentences", "report"]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore", delimiter="\t")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key, "") for key in fields})
+    return path
+
+
+def _parse_json_summary(path: Path) -> dict[str, str | int] | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    counts = data.get("counts") or {}
+    return {
+        "language": str(data.get("language") or ""),
+        "critical": int(counts.get("critical") or 0),
+        "refusal": int(counts.get("refusal") or 0),
+        "defect": int(counts.get("defect") or 0),
+        "warning": int(counts.get("warning") or 0),
+        "sentences": int(data.get("sentences_compared") or 0),
+    }
+
+
+def _parse_html_summary(path: Path) -> dict[str, str | int] | None:
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    if "Translation veracity report" not in text:
+        return None
+
+    def _span(label: str) -> str:
+        match = re.search(rf"<span>{re.escape(label)}:\s*([^<]+)</span>", text)
+        return match.group(1).strip() if match else ""
+
+    def _int(label: str) -> int:
+        raw = _span(label).replace(",", "")
+        return int(raw) if raw.isdigit() else 0
+
+    return {
+        "language": _span("Language"),
+        "critical": _int("Critical"),
+        "refusal": _int("Refusals"),
+        "defect": _int("Defects"),
+        "warning": _int("Warnings"),
+        "sentences": _int("Sentences"),
+    }
