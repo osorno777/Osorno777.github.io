@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "translation-qa"
+version = "0.1.0"
+description = "Slow word-by-word translation veracity checker for Alertness Books"
+requires-python = ">=3.11"
+dependencies = [
+  "pypdf>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+ocr = ["pymupdf>=1.24.0"]
+
+[project.scripts]
+translation-qa = "translation_qa.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["translation_qa*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

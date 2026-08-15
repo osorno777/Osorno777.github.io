@@ -1,0 +1,7 @@
+---
+description: Translation QA checker — secrets path, scan rules, no rewrites
+globs: tools/translation_qa/**
+alwaysApply: false
+---
+
+Report-only checker. Secrets are in `tools/translation_qa/.env` (gitignored). Do not print or commit them. One `rescan.bat` only; reports on `E:\translation_qa`. See `tools/translation_qa/HANDOFF_LOCAL_AGENT.md`.

@@ -1,0 +1,36 @@
+{
+  "english_dirs": [
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/BEARING THE CROSS",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/SUFFERING UNJUSTLY",
+    "C:/Users/dinam/Documents/Writing/Behind the Walls",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/E-books",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/Books",
+    "C:/Alertness AI/website books"
+  ],
+  "english_sources": [
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/BEARING THE CROSS/Bearing the Cross (complete).pdf",
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/SUFFERING UNJUSTLY/Suffering Unjustly (2026).pdf",
+    "C:/Users/dinam/Documents/Writing/Behind the Walls/Behind the Walls (2026).pdf"
+  ],
+  "reference_translations": [
+    "C:/Users/dinam/Documents/Writing/John Cobin Writings/SUFFERING UNJUSTLY/Padeciendo Injustamente (2026).pdf"
+  ],
+  "store_catalog": [
+    "C:/Alertness AI/bookstore/public/store_catalog.json",
+    "C:/Alertness AI/bookstore/store_catalog.json",
+    "C:/Alertness AI/bookstore/data/store_catalog.json",
+    "C:/Alertness AI/bookstore/admin/translations/store_catalog.json"
+  ],
+  "translations_dir": "C:/Alertness AI/website books",
+  "translations_dirs": [
+    "C:/Alertness AI/website books",
+    "C:/Alertness AI/website books/store_epubs",
+    "C:/Alertness AI/bookstore/fulfillment/_out",
+    "C:/Alertness AI/bookstore/btw_rerender",
+    "C:/Alertness AI/bookstore/data",
+    "C:/Alertness AI/bookstore/admin/translations/private",
+    "C:/Users/dinam/bookstore/admin/translations/private",
+    "C:/Users/dinam/Documents/bookstore/admin/translations/private"
+  ],
+  "output_dir": "./reports"
+}
